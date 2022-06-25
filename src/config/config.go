@@ -15,13 +15,28 @@ type Database struct {
 }
 
 type App struct {
-	Port  int  `mapstructure:"port"`
-	Debug bool `mapstructure:"debug"`
+	Port   int    `mapstructure:"port"`
+	Debug  bool   `mapstructure:"debug"`
+	Secret string `mapstructure:"secret"`
+}
+
+type ChulaSSO struct {
+	Host         string `mapstructure:"host"`
+	DeeAppID     string `mapstructure:"app-id"`
+	DeeAppSecret string `mapstructure:"app-secret"`
+}
+
+type Jwt struct {
+	Secret    string `mapstructure:"secret"`
+	ExpiresIn int32  `mapstructure:"expires_in"`
+	Issuer    string `mapstructure:"issuer"`
 }
 
 type Config struct {
 	Database Database `mapstructure:"database"`
 	App      App      `mapstructure:"app"`
+	ChulaSSO ChulaSSO `mapstructure:"chula-sso"`
+	Jwt      Jwt      `mapstructure:"jwt"`
 }
 
 func LoadConfig() (config *Config, err error) {

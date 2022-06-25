@@ -27,3 +27,12 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Compile proto file
 1. Run `make proto`
+
+## Chula SSO Mock
+1. Make sure you follow the `Running` step
+2. Go to `http://localhost:8080/html/login.html?service=https://google.com`
+3. Login (you can fill up with any things)
+4. The ticket will be in the query param
+
+## Special Thanks
+Special thanks to [saengowp](https://github.com/saengowp) for [Chula SSO Mock](https://github.com/saengowp/chulassomock)

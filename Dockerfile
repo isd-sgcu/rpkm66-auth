@@ -29,7 +29,7 @@ COPY --from=base /app/server ./
 ENV GO_ENV production
 
 # Expose port 3001
-EXPOSE 3001
+EXPOSE 3002
 
 # Run the application
 CMD ["./server"]
