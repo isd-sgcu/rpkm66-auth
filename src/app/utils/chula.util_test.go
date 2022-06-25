@@ -15,10 +15,6 @@ func TestChulaUtil(t *testing.T) {
 	suite.Run(t, new(ChulaUtilTest))
 }
 
-//func (t *ChulaUtilTest) SetupTest() {
-//
-//}
-
 func (t *ChulaUtilTest) TestGetFacultySuccess() {
 	testGetFacultySuccess(t.T(), "xxxxxxxx21", "21")
 	testGetFacultySuccess(t.T(), "xxxxxxxx22", "22")
