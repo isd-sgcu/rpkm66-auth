@@ -22,9 +22,9 @@ func (s *Service) FindByStudentID(sid string) (*proto.User, error) {
 
 	res, err := s.client.FindByStudentID(ctx, &proto.FindByStudentIDUserRequest{StudentId: sid})
 	if err != nil {
-		st, ok := status.FromError(err)
+		_, ok := status.FromError(err)
 		if ok {
-			return nil, errors.New(st.Message())
+			return nil, err
 		}
 		return nil, errors.New("Service is down")
 	}

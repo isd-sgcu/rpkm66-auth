@@ -1,6 +1,6 @@
 proto:
-	protoc --proto_path=src/proto --go_out=. --go-grpc_out=. user.proto
-	protoc --proto_path=src/proto --go_out=. --go-grpc_out=. auth.proto
+	protoc --proto_path=src/proto --go_out=. --go-grpc_out=require_unimplemented_servers=false:. user.proto
+	protoc --proto_path=src/proto --go_out=. --go-grpc_out=require_unimplemented_servers=false:. auth.proto
 
 
 test:

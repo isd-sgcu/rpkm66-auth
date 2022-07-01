@@ -63,16 +63,15 @@ func (c *authServiceClient) RefreshToken(ctx context.Context, in *RefreshTokenRe
 }
 
 // AuthServiceServer is the server API for AuthService service.
-// All implementations must embed UnimplementedAuthServiceServer
+// All implementations should embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
 	VerifyTicket(context.Context, *VerifyTicketRequest) (*VerifyTicketResponse, error)
 	Validate(context.Context, *ValidateRequest) (*ValidateResponse, error)
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
-	mustEmbedUnimplementedAuthServiceServer()
 }
 
-// UnimplementedAuthServiceServer must be embedded to have forward compatible implementations.
+// UnimplementedAuthServiceServer should be embedded to have forward compatible implementations.
 type UnimplementedAuthServiceServer struct {
 }
 
@@ -85,7 +84,6 @@ func (UnimplementedAuthServiceServer) Validate(context.Context, *ValidateRequest
 func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
 }
-func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
 // UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to AuthServiceServer will

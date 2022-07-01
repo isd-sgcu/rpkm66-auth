@@ -14,6 +14,10 @@ type Database struct {
 	SSL      string `mapstructure:"ssl"`
 }
 
+type Service struct {
+	Backend string `mapstructure:"backend"`
+}
+
 type App struct {
 	Port   int    `mapstructure:"port"`
 	Debug  bool   `mapstructure:"debug"`
@@ -37,6 +41,7 @@ type Config struct {
 	App      App      `mapstructure:"app"`
 	ChulaSSO ChulaSSO `mapstructure:"chula-sso"`
 	Jwt      Jwt      `mapstructure:"jwt"`
+	Service  Service  `mapstructure:"service"`
 }
 
 func LoadConfig() (config *Config, err error) {

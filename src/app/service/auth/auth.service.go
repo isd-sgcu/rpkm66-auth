@@ -7,6 +7,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-auth/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-auth/src/constant"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -36,7 +37,7 @@ type IUserService interface {
 }
 
 type ITokenService interface {
-	CreateCredentials(*model.Auth) (*proto.Credential, error)
+	CreateCredentials(*model.Auth, string) (*proto.Credential, error)
 	Validate(string) (*dto.TokenPayloadAuth, error)
 }
 
@@ -99,13 +100,28 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 
 				err = s.repo.Create(&auth)
 				if err != nil {
+					log.Error().
+						Err(err).
+						Str("service", "auth").
+						Str("module", "verify ticket").
+						Msg("Error creating the auth data")
 					return nil, status.Error(codes.Unavailable, st.Message())
 				}
 
 			default:
+				log.Error().
+					Err(err).
+					Str("service", "auth").
+					Str("module", "verify ticket").
+					Msg("Service is down")
 				return nil, status.Error(codes.Unavailable, st.Message())
 			}
 		} else {
+			log.Error().
+				Err(err).
+				Str("service", "auth").
+				Str("module", "verify ticket").
+				Msg("Error connect to sso")
 			return nil, status.Error(codes.Unavailable, "Service is down")
 		}
 	} else {
@@ -150,6 +166,10 @@ func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest
 
 	credentials, err := s.CreateNewCredential(&auth)
 	if err != nil {
+		log.Error().Err(err).
+			Str("service", "auth").
+			Str("module", "refresh token").
+			Msg("Error while create new token")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -157,7 +177,7 @@ func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest
 }
 
 func (s *Service) CreateNewCredential(auth *model.Auth) (*proto.Credential, error) {
-	credentials, err := s.tokenService.CreateCredentials(auth)
+	credentials, err := s.tokenService.CreateCredentials(auth, s.secret)
 	if err != nil {
 		return nil, err
 	}

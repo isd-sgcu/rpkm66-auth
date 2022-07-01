@@ -15,6 +15,9 @@ chula-sso:
   app-id: <app id>
   app-secret: <app secret>
 
+service:
+  backend: localhost:3001
+
 jwt:
   secret: <secret>
   expires_in: 3600
