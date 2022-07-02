@@ -57,17 +57,20 @@ func (s *Service) Validate(token string) (*dto.TokenPayloadAuth, error) {
 		return nil, err
 	}
 
-	payload := t.Claims.(dto.TokenPayloadAuth)
+	payload := t.Claims.(jwt.MapClaims)
 
-	if payload.Issuer != s.jwtService.GetConfig().Issuer {
+	if payload["iss"] != s.jwtService.GetConfig().Issuer {
 		return nil, errors.New("Invalid token")
 	}
 
-	if payload.ExpiresAt.Before(time.Now()) {
+	if time.Unix(int64(payload["exp"].(float64)), 0).Before(time.Now()) {
 		return nil, errors.New("Token is expired")
 	}
 
-	return &payload, nil
+	return &dto.TokenPayloadAuth{
+		UserId: payload["user_id"].(string),
+		Role:   payload["role"].(string),
+	}, nil
 }
 
 func (s *Service) CreateRefreshToken() string {
