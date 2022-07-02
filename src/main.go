@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 	"net"
 	"os"
 	"os/signal"
@@ -133,6 +134,7 @@ func main() {
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterAuthServiceServer(grpcServer, aSrv)
 
+	reflection.Register(grpcServer)
 	go func() {
 		log.Info().
 			Str("service", "auth").
