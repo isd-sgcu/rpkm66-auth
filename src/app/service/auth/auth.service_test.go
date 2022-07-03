@@ -28,6 +28,7 @@ type AuthServiceTest struct {
 	UserDto         *proto.User
 	Credential      *proto.Credential
 	Payload         *dto.TokenPayloadAuth
+	secret          string
 	UnauthorizedErr error
 	NotFoundErr     error
 	ServiceDownErr  error
@@ -88,6 +89,8 @@ func (t *AuthServiceTest) SetupTest() {
 	t.UnauthorizedErr = errors.New("unauthorized")
 	t.NotFoundErr = errors.New("not found user")
 	t.ServiceDownErr = errors.New("service is down")
+
+	t.secret = "asuperstrong32bitpasswordgohere!"
 }
 
 func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
@@ -133,9 +136,9 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 	userService.On("Create", in).Return(t.UserDto, nil)
 
 	tokenService := &mock.TokenServiceMock{}
-	tokenService.On("CreateCredentials", t.Auth).Return(t.Credential, nil)
+	tokenService.On("CreateCredentials", t.Auth, t.secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
 
 	assert.Nilf(t.T(), err, "error: %v", err)
@@ -156,9 +159,9 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessNotFirstTimeLogin() {
 	userService.On("FindByStudentID", t.UserDto.Id).Return(t.UserDto, nil)
 
 	tokenService := &mock.TokenServiceMock{}
-	tokenService.On("CreateCredentials", t.Auth).Return(t.Credential, nil)
+	tokenService.On("CreateCredentials", t.Auth, t.secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
 
 	st, ok := status.FromError(err)
@@ -181,7 +184,7 @@ func (t *AuthServiceTest) TestVerifyTicketInvalid() {
 
 	tokenService := &mock.TokenServiceMock{}
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
 
 	st, ok := status.FromError(err)
@@ -204,7 +207,7 @@ func (t *AuthServiceTest) TestVerifyTicketGrpcErr() {
 
 	tokenService := &mock.TokenServiceMock{}
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
 
 	st, ok := status.FromError(err)
@@ -230,7 +233,7 @@ func (t *AuthServiceTest) TestValidateSuccess() {
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("Validate", token).Return(t.Payload, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 
 	actual, err := srv.Validate(context.Background(), &proto.ValidateRequest{Token: token})
 
@@ -250,7 +253,7 @@ func (t *AuthServiceTest) TestValidateInvalidToken() {
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("Validate", token).Return(nil, errors.New("Invalid token"))
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 
 	actual, err := srv.Validate(context.Background(), &proto.ValidateRequest{Token: token})
 
@@ -264,7 +267,7 @@ func (t *AuthServiceTest) TestValidateInvalidToken() {
 func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 	want := &proto.RefreshTokenResponse{Credential: t.Credential}
 
-	token, _ := utils.Encrypt([]byte("asuperstrong32bitpasswordgohere!"), t.Credential.RefreshToken)
+	token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(t.Auth, nil)
@@ -276,9 +279,9 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateRefreshToken").Return(token)
-	tokenService.On("CreateCredentials", t.Auth).Return(t.Credential, nil)
+	tokenService.On("CreateCredentials", t.Auth, t.secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 
 	actual, err := srv.RefreshToken(context.Background(), &proto.RefreshTokenRequest{RefreshToken: token})
 
@@ -287,7 +290,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 }
 
 func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
-	token, _ := utils.Encrypt([]byte("asuperstrong32bitpasswordgohere!"), t.Credential.RefreshToken)
+	token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(nil, errors.New("Not found token"))
@@ -299,9 +302,9 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
 
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateRefreshToken").Return(token)
-	tokenService.On("CreateCredentials", t.Auth).Return(t.Credential, nil)
+	tokenService.On("CreateCredentials", t.Auth, t.secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 
 	actual, err := srv.RefreshToken(context.Background(), &proto.RefreshTokenRequest{RefreshToken: token})
 
@@ -313,7 +316,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
 }
 
 func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
-	token, _ := utils.Encrypt([]byte("asuperstrong32bitpasswordgohere!"), t.Credential.RefreshToken)
+	token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(t.Auth, nil)
@@ -324,9 +327,9 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
 
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateRefreshToken").Return(token)
-	tokenService.On("CreateCredentials", t.Auth).Return(nil, errors.New("Invalid secret key"))
+	tokenService.On("CreateCredentials", t.Auth, t.secret).Return(nil, errors.New("Invalid secret key"))
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 
 	actual, err := srv.RefreshToken(context.Background(), &proto.RefreshTokenRequest{RefreshToken: token})
 
@@ -339,7 +342,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
 
 func (t *AuthServiceTest) TestCreateCredentialsSuccess() {
 	want := t.Credential
-	token, _ := utils.Encrypt([]byte("asuperstrong32bitpasswordgohere!"), faker.Word())
+	token, _ := utils.Encrypt([]byte(t.secret), faker.Word())
 	t.Credential.RefreshToken = faker.Word()
 
 	repo := &mock.RepositoryMock{}
@@ -351,9 +354,9 @@ func (t *AuthServiceTest) TestCreateCredentialsSuccess() {
 
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateRefreshToken").Return(token)
-	tokenService.On("CreateCredentials", t.Auth).Return(t.Credential, nil)
+	tokenService.On("CreateCredentials", t.Auth, t.secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 
 	credentials, err := srv.CreateNewCredential(t.Auth)
 
@@ -365,7 +368,7 @@ func (t *AuthServiceTest) TestCreateCredentialsSuccess() {
 func (t *AuthServiceTest) TestCreateCredentialsInternalErr() {
 	want := errors.New("Invalid secret key")
 
-	token, _ := utils.Encrypt([]byte("asuperstrong32bitpasswordgohere!"), faker.Word())
+	token, _ := utils.Encrypt([]byte(t.secret), faker.Word())
 	t.Credential.RefreshToken = faker.Word()
 
 	repo := &mock.RepositoryMock{}
@@ -377,9 +380,9 @@ func (t *AuthServiceTest) TestCreateCredentialsInternalErr() {
 
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateRefreshToken").Return(token)
-	tokenService.On("CreateCredentials", t.Auth).Return(nil, errors.New("Invalid secret key"))
+	tokenService.On("CreateCredentials", t.Auth, t.secret).Return(nil, errors.New("Invalid secret key"))
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, "asuperstrong32bitpasswordgohere!")
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 
 	credentials, err := srv.CreateNewCredential(t.Auth)
 

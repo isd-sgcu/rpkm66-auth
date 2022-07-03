@@ -121,8 +121,8 @@ type TokenServiceMock struct {
 	mock.Mock
 }
 
-func (s *TokenServiceMock) CreateCredentials(in *model.Auth) (credential *proto.Credential, err error) {
-	args := s.Called(in)
+func (s *TokenServiceMock) CreateCredentials(in *model.Auth, secret string) (credential *proto.Credential, err error) {
+	args := s.Called(in, secret)
 
 	if args.Get(0) != nil {
 		credential = args.Get(0).(*proto.Credential)

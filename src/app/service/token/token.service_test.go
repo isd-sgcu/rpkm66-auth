@@ -21,11 +21,12 @@ import (
 
 type TokenServiceTest struct {
 	suite.Suite
-	Credential *proto.Credential
-	Auth       *model.Auth
-	Token      *jwt.Token
-	Payload    *dto.TokenPayloadAuth
-	Conf       *config.Jwt
+	Credential   *proto.Credential
+	Auth         *model.Auth
+	Token        *jwt.Token
+	TokenDecoded jwt.MapClaims
+	Payload      *dto.TokenPayloadAuth
+	Conf         *config.Jwt
 }
 
 func TestTokenService(t *testing.T) {
@@ -79,6 +80,13 @@ func (t *TokenServiceTest) SetupTest() {
 		UserId: t.Auth.UserID,
 		Role:   t.Auth.Role,
 	}
+
+	t.TokenDecoded = jwt.MapClaims{}
+	t.TokenDecoded["iss"] = t.Conf.Issuer
+	t.TokenDecoded["iat"] = t.Token.Claims.(dto.TokenPayloadAuth).IssuedAt
+	t.TokenDecoded["exp"] = float64(time.Now().Add(time.Second * time.Duration(t.Conf.ExpiresIn)).UnixNano())
+	t.TokenDecoded["user_id"] = t.Auth.UserID
+	t.TokenDecoded["role"] = t.Auth.Role
 }
 
 func (t *TokenServiceTest) TestCreateCredentialsSuccess() {
@@ -114,11 +122,17 @@ func (t *TokenServiceTest) TestCreateCredentialsInternalErr() {
 }
 
 func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
-	want := t.Payload
+	want := &dto.TokenPayloadAuth{
+		UserId: t.Token.Claims.(dto.TokenPayloadAuth).UserId,
+		Role:   t.Token.Claims.(dto.TokenPayloadAuth).Role,
+	}
 	token := faker.Word()
 
 	jwtSrv := mock.JwtServiceMock{}
-	jwtSrv.On("VerifyAuth", token).Return(t.Token, nil)
+	jwtSrv.On("VerifyAuth", token).Return(&jwt.Token{
+		Claims: t.TokenDecoded,
+		Valid:  true,
+	}, nil)
 	jwtSrv.On("GetConfig").Return(t.Conf, nil)
 
 	srv := NewTokenService(&jwtSrv)
@@ -131,29 +145,20 @@ func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
 
 func (t *TokenServiceTest) TestValidateAccessTokenInvalidToken() {
 	testValidateAccessTokenInvalidTokenMalformedToken(t.T(), faker.Word())
+
+	t.TokenDecoded["iss"] = "something"
+
 	testValidateAccessTokenInvalidTokenInvalidCase(t.T(), t.Conf, &jwt.Token{
-		Claims: dto.TokenPayloadAuth{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    faker.Word(),
-				IssuedAt:  jwt.NewNumericDate(time.Now()),
-				ExpiresAt: jwt.NewNumericDate(time.Now()),
-			},
-			UserId: t.Auth.UserID,
-			Role:   t.Auth.Role,
-		},
-		Valid: true,
+		Claims: t.TokenDecoded,
+		Valid:  true,
 	}, "Invalid token")
+
+	t.TokenDecoded["iss"] = t.Conf.Issuer
+	t.TokenDecoded["exp"] = float64(time.Now().Unix())
+
 	testValidateAccessTokenInvalidTokenInvalidCase(t.T(), t.Conf, &jwt.Token{
-		Claims: dto.TokenPayloadAuth{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    t.Conf.Issuer,
-				IssuedAt:  jwt.NewNumericDate(time.Now()),
-				ExpiresAt: jwt.NewNumericDate(time.Now()),
-			},
-			UserId: t.Auth.UserID,
-			Role:   t.Auth.Role,
-		},
-		Valid: true,
+		Claims: t.TokenDecoded,
+		Valid:  true,
 	}, "Token is expired")
 }
 
@@ -173,13 +178,13 @@ func testValidateAccessTokenInvalidTokenMalformedToken(t *testing.T, refreshToke
 	assert.Equal(t, want.Error(), err.Error())
 }
 
-func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *config.Jwt, token *jwt.Token, errMsg string) {
+func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *config.Jwt, tokenDecoded *jwt.Token, errMsg string) {
 	want := errors.New(errMsg)
 
 	in := faker.Word()
 
 	jwtSrv := mock.JwtServiceMock{}
-	jwtSrv.On("VerifyAuth", in).Return(token, nil)
+	jwtSrv.On("VerifyAuth", in).Return(tokenDecoded, nil)
 	jwtSrv.On("GetConfig").Return(conf, nil)
 
 	srv := NewTokenService(&jwtSrv)
