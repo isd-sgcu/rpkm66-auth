@@ -267,7 +267,8 @@ func (t *AuthServiceTest) TestValidateInvalidToken() {
 func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 	want := &proto.RefreshTokenResponse{Credential: t.Credential}
 
-	token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
+	//token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
+	token := t.Credential.RefreshToken
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(t.Auth, nil)
@@ -290,7 +291,8 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 }
 
 func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
-	token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
+	//token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
+	token := t.Credential.RefreshToken
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(nil, errors.New("Not found token"))
@@ -316,7 +318,8 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
 }
 
 func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
-	token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
+	//token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
+	token := t.Credential.RefreshToken
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(t.Auth, nil)

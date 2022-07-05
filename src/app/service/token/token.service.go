@@ -1,6 +1,7 @@
 package token
 
 import (
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
@@ -8,11 +9,13 @@ import (
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
 type Service struct {
-	jwtService IJwtService
+	jwtService      IJwtService
+	cacheRepository ICacheRepository
 }
 
 type IJwtService interface {
@@ -21,9 +24,15 @@ type IJwtService interface {
 	GetConfig() *config.Jwt
 }
 
-func NewTokenService(jwtService IJwtService) *Service {
+type ICacheRepository interface {
+	SaveCache(string, interface{}, int) error
+	GetCache(string, interface{}) error
+}
+
+func NewTokenService(jwtService IJwtService, cacheRepository ICacheRepository) *Service {
 	return &Service{
-		jwtService: jwtService,
+		jwtService:      jwtService,
+		cacheRepository: cacheRepository,
 	}
 }
 
@@ -31,6 +40,16 @@ func (s *Service) CreateCredentials(auth *model.Auth, secret string) (*proto.Cre
 	token, err := s.jwtService.SignAuth(auth)
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.cacheRepository.SaveCache(auth.UserID, token, int(s.jwtService.GetConfig().ExpiresIn))
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "auth").
+			Str("module", "validate").
+			Msg("Cannot connect to cache server")
+		return nil, errors.Wrapf(err, "Cannot connect to cache server")
 	}
 
 	credential := &proto.Credential{
@@ -56,6 +75,25 @@ func (s *Service) Validate(token string) (*dto.TokenPayloadAuth, error) {
 
 	if time.Unix(int64(payload["exp"].(float64)), 0).Before(time.Now()) {
 		return nil, errors.New("Token is expired")
+	}
+
+	var cacheToken string
+	err = s.cacheRepository.GetCache(payload["user_id"].(string), &cacheToken)
+	if err != nil {
+		if err != redis.Nil {
+			log.Error().
+				Err(err).
+				Str("service", "auth").
+				Str("module", "validate").
+				Msg("Cannot connect to cache server")
+			return nil, errors.Wrapf(err, "Cannot connect to cache server")
+		}
+
+		return nil, errors.New("Invalid token")
+	}
+
+	if cacheToken != token {
+		return nil, errors.New("Invalid token")
 	}
 
 	return &dto.TokenPayloadAuth{

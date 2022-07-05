@@ -2,6 +2,7 @@ package token
 
 import (
 	"github.com/bxcodec/faker/v3"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
@@ -10,6 +11,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
 	"github.com/isd-sgcu/rnkm65-auth/src/constant"
 	mock "github.com/isd-sgcu/rnkm65-auth/src/mocks/auth"
+	"github.com/isd-sgcu/rnkm65-auth/src/mocks/cache"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -96,7 +98,12 @@ func (t *TokenServiceTest) TestCreateCredentialsSuccess() {
 	jwtSrv.On("SignAuth", t.Auth).Return(t.Credential.AccessToken, nil)
 	jwtSrv.On("GetConfig").Return(t.Conf, nil)
 
-	srv := NewTokenService(&jwtSrv)
+	cacheRepo := cache.RepositoryMock{
+		V: map[string]interface{}{},
+	}
+	cacheRepo.On("SaveCache", t.TokenDecoded["user_id"], t.Credential.AccessToken, 3600).Return(nil)
+
+	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.CreateCredentials(t.Auth, "asuperstrong32bitpasswordgohere!")
 
@@ -111,7 +118,9 @@ func (t *TokenServiceTest) TestCreateCredentialsInternalErr() {
 	jwtSrv := mock.JwtServiceMock{}
 	jwtSrv.On("SignAuth", t.Auth).Return("", errors.New("Error while signing the token"))
 
-	srv := NewTokenService(&jwtSrv)
+	cacheRepo := cache.RepositoryMock{}
+
+	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.CreateCredentials(t.Auth, "asuperstrong32bitpasswordgohere!")
 
@@ -135,7 +144,12 @@ func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
 	}, nil)
 	jwtSrv.On("GetConfig").Return(t.Conf, nil)
 
-	srv := NewTokenService(&jwtSrv)
+	var accessToken string
+
+	cacheRepo := cache.RepositoryMock{}
+	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &accessToken).Return(&token, nil)
+
+	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(token)
 
@@ -168,7 +182,9 @@ func testValidateAccessTokenInvalidTokenMalformedToken(t *testing.T, refreshToke
 	jwtSrv := mock.JwtServiceMock{}
 	jwtSrv.On("VerifyAuth", refreshToken).Return(nil, errors.New("Error while signing the token"))
 
-	srv := NewTokenService(&jwtSrv)
+	cacheRepo := cache.RepositoryMock{}
+
+	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(refreshToken)
 
@@ -187,7 +203,9 @@ func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *config.J
 	jwtSrv.On("VerifyAuth", in).Return(tokenDecoded, nil)
 	jwtSrv.On("GetConfig").Return(conf, nil)
 
-	srv := NewTokenService(&jwtSrv)
+	cacheRepo := cache.RepositoryMock{}
+
+	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(in)
 
@@ -195,4 +213,54 @@ func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *config.J
 
 	assert.Equal(t, payload, actual)
 	assert.Equal(t, want.Error(), err.Error())
+}
+
+func (t *TokenServiceTest) TestValidateAccessTokenNotMatchWithCache() {
+	want := errors.New("Invalid token")
+	token := faker.Word()
+
+	jwtSrv := mock.JwtServiceMock{}
+	jwtSrv.On("VerifyAuth", token).Return(&jwt.Token{
+		Claims: t.TokenDecoded,
+		Valid:  true,
+	}, nil)
+	jwtSrv.On("GetConfig").Return(t.Conf, nil)
+
+	var accessToken string
+
+	cachedToken := faker.Word()
+
+	cacheRepo := cache.RepositoryMock{}
+	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &accessToken).Return(&cachedToken, nil)
+
+	srv := NewTokenService(&jwtSrv, &cacheRepo)
+
+	actual, err := srv.Validate(token)
+
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), want.Error(), err.Error())
+}
+
+func (t *TokenServiceTest) TestValidateCacheNotFoundUser() {
+	want := errors.New("Invalid token")
+	token := faker.Word()
+
+	jwtSrv := mock.JwtServiceMock{}
+	jwtSrv.On("VerifyAuth", token).Return(&jwt.Token{
+		Claims: t.TokenDecoded,
+		Valid:  true,
+	}, nil)
+	jwtSrv.On("GetConfig").Return(t.Conf, nil)
+
+	var accessToken string
+
+	cacheRepo := cache.RepositoryMock{}
+	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &accessToken).Return(nil, redis.Nil)
+
+	srv := NewTokenService(&jwtSrv, &cacheRepo)
+
+	actual, err := srv.Validate(token)
+
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), want.Error(), err.Error())
 }
