@@ -23,6 +23,8 @@ config.yaml
 # idea
 .idea
 
+.vscode
+
 # volumes
 volumes
 

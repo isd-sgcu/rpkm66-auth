@@ -152,14 +152,9 @@ func (s *Service) Validate(_ context.Context, req *proto.ValidateRequest) (res *
 }
 
 func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest) (res *proto.RefreshTokenResponse, err error) {
-	decodedRefreshToken, err := utils.Decrypt([]byte(s.secret), req.RefreshToken)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "Invalid refresh token")
-	}
-
 	auth := model.Auth{}
 
-	err = s.repo.FindByRefreshToken(decodedRefreshToken, &auth)
+	err = s.repo.FindByRefreshToken(req.RefreshToken, &auth)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "Invalid refresh token")
 	}

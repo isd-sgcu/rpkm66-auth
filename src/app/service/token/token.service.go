@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
-	"github.com/isd-sgcu/rnkm65-auth/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/pkg/errors"
@@ -34,17 +33,9 @@ func (s *Service) CreateCredentials(auth *model.Auth, secret string) (*proto.Cre
 		return nil, err
 	}
 
-	refreshToken := s.CreateRefreshToken()
-	encodedRefreshToken, err := utils.Encrypt([]byte(secret), refreshToken)
-	if err != nil {
-		return nil, err
-	}
-
-	auth.RefreshToken = refreshToken
-
 	credential := &proto.Credential{
 		AccessToken:  token,
-		RefreshToken: encodedRefreshToken,
+		RefreshToken: s.CreateRefreshToken(),
 		ExpiresIn:    s.jwtService.GetConfig().ExpiresIn,
 	}
 
