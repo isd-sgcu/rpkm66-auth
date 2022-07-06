@@ -68,7 +68,6 @@ func (t *TokenServiceTest) SetupTest() {
 				IssuedAt:  jwt.NewNumericDate(time.Now()),
 			},
 			UserId: t.Auth.UserID,
-			Role:   t.Auth.Role,
 		},
 		Valid: true,
 	}
@@ -80,7 +79,6 @@ func (t *TokenServiceTest) SetupTest() {
 			IssuedAt:  t.Token.Claims.(dto.TokenPayloadAuth).IssuedAt,
 		},
 		UserId: t.Auth.UserID,
-		Role:   t.Auth.Role,
 	}
 
 	t.TokenDecoded = jwt.MapClaims{}
@@ -133,7 +131,6 @@ func (t *TokenServiceTest) TestCreateCredentialsInternalErr() {
 func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
 	want := &dto.TokenPayloadAuth{
 		UserId: t.Token.Claims.(dto.TokenPayloadAuth).UserId,
-		Role:   t.Token.Claims.(dto.TokenPayloadAuth).Role,
 	}
 	token := faker.Word()
 

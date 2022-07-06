@@ -83,7 +83,6 @@ func (t *AuthServiceTest) SetupTest() {
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		UserId: t.Auth.UserID,
-		Role:   t.Auth.Role,
 	}
 
 	t.UnauthorizedErr = errors.New("unauthorized")
@@ -115,7 +114,7 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 
 	a := &auth.Auth{
 		UserID: t.UserDto.Id,
-		Role:   t.Auth.Role,
+		Role:   constant.USER,
 	}
 
 	repo := &mock.RepositoryMock{}
@@ -220,7 +219,6 @@ func (t *AuthServiceTest) TestVerifyTicketGrpcErr() {
 func (t *AuthServiceTest) TestValidateSuccess() {
 	want := &proto.ValidateResponse{
 		UserId: t.UserDto.Id,
-		Role:   t.Auth.Role,
 	}
 	token := faker.Word()
 

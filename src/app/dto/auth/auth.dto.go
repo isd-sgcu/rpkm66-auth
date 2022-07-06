@@ -19,5 +19,4 @@ type ChulaSSOCredential struct {
 type TokenPayloadAuth struct {
 	jwt.RegisteredClaims
 	UserId string `json:"user_id"`
-	Role   string `json:"role"`
 }

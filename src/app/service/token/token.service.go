@@ -98,7 +98,6 @@ func (s *Service) Validate(token string) (*dto.TokenPayloadAuth, error) {
 
 	return &dto.TokenPayloadAuth{
 		UserId: payload["user_id"].(string),
-		Role:   payload["role"].(string),
 	}, nil
 }
 

@@ -147,7 +147,6 @@ func (s *Service) Validate(_ context.Context, req *proto.ValidateRequest) (res *
 
 	return &proto.ValidateResponse{
 		UserId: payload.UserId,
-		Role:   payload.Role,
 	}, nil
 }
 

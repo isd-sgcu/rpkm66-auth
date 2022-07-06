@@ -33,7 +33,6 @@ func (s *Service) SignAuth(in *model.Auth) (string, error) {
 			IssuedAt:  _jwt.NewNumericDate(time.Now()),
 		},
 		UserId: in.UserID,
-		Role:   in.Role,
 	}
 	token := _jwt.NewWithClaims(_jwt.SigningMethodHS256, payloads)
 
