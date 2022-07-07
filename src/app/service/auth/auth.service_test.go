@@ -28,6 +28,7 @@ type AuthServiceTest struct {
 	UserDto         *proto.User
 	Credential      *proto.Credential
 	Payload         *dto.TokenPayloadAuth
+	UserCredential  *dto.UserCredential
 	secret          string
 	UnauthorizedErr error
 	NotFoundErr     error
@@ -83,6 +84,11 @@ func (t *AuthServiceTest) SetupTest() {
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		UserId: t.Auth.UserID,
+	}
+
+	t.UserCredential = &dto.UserCredential{
+		UserId: t.Auth.UserID,
+		Role:   constant.Role(t.Auth.Role),
 	}
 
 	t.UnauthorizedErr = errors.New("unauthorized")
@@ -219,6 +225,7 @@ func (t *AuthServiceTest) TestVerifyTicketGrpcErr() {
 func (t *AuthServiceTest) TestValidateSuccess() {
 	want := &proto.ValidateResponse{
 		UserId: t.UserDto.Id,
+		Role:   t.Auth.Role,
 	}
 	token := faker.Word()
 
@@ -229,7 +236,7 @@ func (t *AuthServiceTest) TestValidateSuccess() {
 	userService := &mock.UserServiceMock{}
 
 	tokenService := &mock.TokenServiceMock{}
-	tokenService.On("Validate", token).Return(t.Payload, nil)
+	tokenService.On("Validate", token).Return(t.UserCredential, nil)
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.secret)
 

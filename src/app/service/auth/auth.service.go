@@ -38,7 +38,7 @@ type IUserService interface {
 
 type ITokenService interface {
 	CreateCredentials(*model.Auth, string) (*proto.Credential, error)
-	Validate(string) (*dto.TokenPayloadAuth, error)
+	Validate(string) (*dto.UserCredential, error)
 }
 
 func NewService(
@@ -140,13 +140,14 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 }
 
 func (s *Service) Validate(_ context.Context, req *proto.ValidateRequest) (res *proto.ValidateResponse, err error) {
-	payload, err := s.tokenService.Validate(req.Token)
+	credential, err := s.tokenService.Validate(req.Token)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	return &proto.ValidateResponse{
-		UserId: payload.UserId,
+		UserId: credential.UserId,
+		Role:   string(credential.Role),
 	}, nil
 }
 

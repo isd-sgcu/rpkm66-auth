@@ -96,10 +96,15 @@ func (t *TokenServiceTest) TestCreateCredentialsSuccess() {
 	jwtSrv.On("SignAuth", t.Auth).Return(t.Credential.AccessToken, nil)
 	jwtSrv.On("GetConfig").Return(t.Conf, nil)
 
+	cacheData := &dto.CacheAuth{
+		Token: t.Credential.AccessToken,
+		Role:  constant.USER,
+	}
+
 	cacheRepo := cache.RepositoryMock{
 		V: map[string]interface{}{},
 	}
-	cacheRepo.On("SaveCache", t.TokenDecoded["user_id"], t.Credential.AccessToken, 3600).Return(nil)
+	cacheRepo.On("SaveCache", t.TokenDecoded["user_id"], cacheData, 3600).Return(nil)
 
 	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
@@ -129,8 +134,9 @@ func (t *TokenServiceTest) TestCreateCredentialsInternalErr() {
 }
 
 func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
-	want := &dto.TokenPayloadAuth{
+	want := &dto.UserCredential{
 		UserId: t.Token.Claims.(dto.TokenPayloadAuth).UserId,
+		Role:   constant.Role(t.Auth.Role),
 	}
 	token := faker.Word()
 
@@ -141,10 +147,12 @@ func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
 	}, nil)
 	jwtSrv.On("GetConfig").Return(t.Conf, nil)
 
-	var accessToken string
-
+	cacheAuth := dto.CacheAuth{
+		Token: token,
+		Role:  constant.USER,
+	}
 	cacheRepo := cache.RepositoryMock{}
-	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &accessToken).Return(&token, nil)
+	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &dto.CacheAuth{}).Return(&cacheAuth, nil)
 
 	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
@@ -185,7 +193,7 @@ func testValidateAccessTokenInvalidTokenMalformedToken(t *testing.T, refreshToke
 
 	actual, err := srv.Validate(refreshToken)
 
-	var payload *dto.TokenPayloadAuth
+	var payload *dto.UserCredential
 
 	assert.Equal(t, payload, actual)
 	assert.Equal(t, want.Error(), err.Error())
@@ -206,7 +214,7 @@ func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *config.J
 
 	actual, err := srv.Validate(in)
 
-	var payload *dto.TokenPayloadAuth
+	var payload *dto.UserCredential
 
 	assert.Equal(t, payload, actual)
 	assert.Equal(t, want.Error(), err.Error())
@@ -216,6 +224,11 @@ func (t *TokenServiceTest) TestValidateAccessTokenNotMatchWithCache() {
 	want := errors.New("Invalid token")
 	token := faker.Word()
 
+	cacheAuth := dto.CacheAuth{
+		Token: faker.Word(),
+		Role:  constant.Role(t.Auth.Role),
+	}
+
 	jwtSrv := mock.JwtServiceMock{}
 	jwtSrv.On("VerifyAuth", token).Return(&jwt.Token{
 		Claims: t.TokenDecoded,
@@ -223,12 +236,8 @@ func (t *TokenServiceTest) TestValidateAccessTokenNotMatchWithCache() {
 	}, nil)
 	jwtSrv.On("GetConfig").Return(t.Conf, nil)
 
-	var accessToken string
-
-	cachedToken := faker.Word()
-
 	cacheRepo := cache.RepositoryMock{}
-	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &accessToken).Return(&cachedToken, nil)
+	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &dto.CacheAuth{}).Return(&cacheAuth, nil)
 
 	srv := NewTokenService(&jwtSrv, &cacheRepo)
 
@@ -249,10 +258,8 @@ func (t *TokenServiceTest) TestValidateCacheNotFoundUser() {
 	}, nil)
 	jwtSrv.On("GetConfig").Return(t.Conf, nil)
 
-	var accessToken string
-
 	cacheRepo := cache.RepositoryMock{}
-	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &accessToken).Return(nil, redis.Nil)
+	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &dto.CacheAuth{}).Return(nil, redis.Nil)
 
 	srv := NewTokenService(&jwtSrv, &cacheRepo)
 

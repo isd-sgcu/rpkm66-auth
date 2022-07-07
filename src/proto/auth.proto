@@ -34,6 +34,7 @@ message ValidateRequest{
 
 message ValidateResponse{
   string userId = 1;
+  string role = 2;
 }
 
 // Redeem Refresh Token

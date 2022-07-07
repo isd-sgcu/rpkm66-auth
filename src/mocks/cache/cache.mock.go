@@ -1,6 +1,7 @@
 package cache
 
 import (
+	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/mock"
 )
@@ -24,7 +25,7 @@ func (t *RepositoryMock) GetCache(key string, v interface{}) error {
 	args := t.Called(key, v)
 
 	if args.Get(0) != nil {
-		*v.(*string) = *args.Get(0).(*string)
+		*v.(*dto.CacheAuth) = *args.Get(0).(*dto.CacheAuth)
 	}
 
 	return args.Error(1)

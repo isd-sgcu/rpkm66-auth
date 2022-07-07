@@ -7,6 +7,7 @@ import (
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
+	"github.com/isd-sgcu/rnkm65-auth/src/constant"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
@@ -42,14 +43,19 @@ func (s *Service) CreateCredentials(auth *model.Auth, secret string) (*proto.Cre
 		return nil, err
 	}
 
-	err = s.cacheRepository.SaveCache(auth.UserID, token, int(s.jwtService.GetConfig().ExpiresIn))
+	cache := dto.CacheAuth{
+		Token: token,
+		Role:  constant.Role(auth.Role),
+	}
+
+	err = s.cacheRepository.SaveCache(auth.UserID, &cache, int(s.jwtService.GetConfig().ExpiresIn))
 	if err != nil {
 		log.Error().
 			Err(err).
 			Str("service", "auth").
 			Str("module", "validate").
 			Msg("Cannot connect to cache server")
-		return nil, errors.Wrapf(err, "Cannot connect to cache server")
+		return nil, errors.New("Internal service error")
 	}
 
 	credential := &proto.Credential{
@@ -61,7 +67,7 @@ func (s *Service) CreateCredentials(auth *model.Auth, secret string) (*proto.Cre
 	return credential, nil
 }
 
-func (s *Service) Validate(token string) (*dto.TokenPayloadAuth, error) {
+func (s *Service) Validate(token string) (*dto.UserCredential, error) {
 	t, err := s.jwtService.VerifyAuth(token)
 	if err != nil {
 		return nil, err
@@ -77,8 +83,8 @@ func (s *Service) Validate(token string) (*dto.TokenPayloadAuth, error) {
 		return nil, errors.New("Token is expired")
 	}
 
-	var cacheToken string
-	err = s.cacheRepository.GetCache(payload["user_id"].(string), &cacheToken)
+	cache := dto.CacheAuth{}
+	err = s.cacheRepository.GetCache(payload["user_id"].(string), &cache)
 	if err != nil {
 		if err != redis.Nil {
 			log.Error().
@@ -86,18 +92,19 @@ func (s *Service) Validate(token string) (*dto.TokenPayloadAuth, error) {
 				Str("service", "auth").
 				Str("module", "validate").
 				Msg("Cannot connect to cache server")
-			return nil, errors.Wrapf(err, "Cannot connect to cache server")
+			return nil, errors.New("Internal service error")
 		}
 
 		return nil, errors.New("Invalid token")
 	}
 
-	if cacheToken != token {
+	if cache.Token != token {
 		return nil, errors.New("Invalid token")
 	}
 
-	return &dto.TokenPayloadAuth{
+	return &dto.UserCredential{
 		UserId: payload["user_id"].(string),
+		Role:   cache.Role,
 	}, nil
 }
 

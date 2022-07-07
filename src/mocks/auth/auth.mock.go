@@ -131,11 +131,11 @@ func (s *TokenServiceMock) CreateCredentials(in *model.Auth, secret string) (cre
 	return credential, args.Error(1)
 }
 
-func (s *TokenServiceMock) Validate(token string) (payload *dto.TokenPayloadAuth, err error) {
+func (s *TokenServiceMock) Validate(token string) (payload *dto.UserCredential, err error) {
 	args := s.Called(token)
 
 	if args.Get(0) != nil {
-		payload = args.Get(0).(*dto.TokenPayloadAuth)
+		payload = args.Get(0).(*dto.UserCredential)
 	}
 
 	return payload, args.Error(1)
