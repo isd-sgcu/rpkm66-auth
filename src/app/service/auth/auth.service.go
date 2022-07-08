@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strconv"
 )
 
 type Service struct {
@@ -74,12 +75,36 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 			case codes.NotFound:
 				year, err := utils.CalYearFromID(ssoData.Ouid)
 				if err != nil {
-					return nil, err
+					log.Error().
+						Err(err).
+						Str("service", "auth").
+						Str("module", "verify ticket").
+						Msgf("Cannot parse %s to int of student id %s", year, ssoData.Ouid)
+					return nil, status.Error(codes.Internal, "Internal service error")
+				}
+
+				yearInt, err := strconv.Atoi(year)
+				if err != nil {
+					log.Error().
+						Err(err).
+						Str("service", "auth").
+						Str("module", "verify ticket").
+						Msgf("Cannot parse %s to int of student id %s", year, ssoData.Ouid)
+					return nil, status.Error(codes.Internal, "Internal service error")
+				}
+
+				if yearInt > 3 {
+					return nil, status.Error(codes.PermissionDenied, "Forbidden study year")
 				}
 
 				faculty, err := utils.GetFacultyFromID(ssoData.Ouid)
 				if err != nil {
-					return nil, err
+					log.Error().
+						Err(err).
+						Str("service", "auth").
+						Str("module", "verify ticket").
+						Msgf("Cannot get %s from faculty id of student id %s", year, ssoData.Ouid)
+					return nil, status.Error(codes.Internal, "Internal service error")
 				}
 
 				in := &proto.User{
@@ -90,7 +115,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 
 				user, err = s.userService.Create(in)
 				if err != nil {
-					return nil, status.Error(codes.Unauthenticated, st.Message())
+					return nil, status.Error(codes.InvalidArgument, st.Message())
 				}
 
 				auth = model.Auth{
@@ -135,6 +160,11 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	log.Info().
+		Str("service", "auth").
+		Str("module", "verify ticket").
+		Msgf("User %s login to the service", user.StudentID)
 
 	return &proto.VerifyTicketResponse{Credential: credentials}, err
 }
