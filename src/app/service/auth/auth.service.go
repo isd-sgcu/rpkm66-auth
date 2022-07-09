@@ -64,6 +64,11 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 
 	err = s.chulaSSOClient.VerifyTicket(req.Ticket, &ssoData)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "auth service").
+			Str("module", "verify ticket").
+			Msgf("Someone is trying to logging in using SSO ticket")
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
