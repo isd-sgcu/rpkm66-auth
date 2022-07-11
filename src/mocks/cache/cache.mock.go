@@ -2,7 +2,6 @@ package cache
 
 import (
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -13,8 +12,6 @@ type RepositoryMock struct {
 
 func (t *RepositoryMock) SaveCache(key string, v interface{}, ttl int) error {
 	args := t.Called(key, v, ttl)
-
-	log.Print(key)
 
 	t.V[key] = v
 
