@@ -3,8 +3,6 @@ package user
 import (
 	"context"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
-	"github.com/pkg/errors"
-	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -22,11 +20,7 @@ func (s *Service) FindByStudentID(sid string) (*proto.User, error) {
 
 	res, err := s.client.FindByStudentID(ctx, &proto.FindByStudentIDUserRequest{StudentId: sid})
 	if err != nil {
-		_, ok := status.FromError(err)
-		if ok {
-			return nil, err
-		}
-		return nil, errors.New("Service is down")
+		return nil, err
 	}
 
 	return res.User, nil
@@ -38,11 +32,7 @@ func (s *Service) Create(user *proto.User) (*proto.User, error) {
 
 	res, err := s.client.Create(ctx, &proto.CreateUserRequest{User: user})
 	if err != nil {
-		_, ok := status.FromError(err)
-		if ok {
-			return nil, errors.New("Invalid request")
-		}
-		return nil, errors.New("Service is down")
+		return nil, err
 	}
 
 	return res.User, nil

@@ -113,6 +113,8 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 				}
 
 				in := &proto.User{
+					Firstname: ssoData.Firstname,
+					Lastname:  ssoData.Lastname,
 					StudentID: ssoData.Ouid,
 					Year:      year,
 					Faculty:   faculty.FacultyEN,

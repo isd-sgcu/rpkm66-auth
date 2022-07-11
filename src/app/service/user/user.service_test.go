@@ -26,27 +26,26 @@ func TestUserService(t *testing.T) {
 
 func (t *UserServiceTest) SetupTest() {
 	t.UserDto = &proto.User{
-		Id:                    faker.UUIDDigit(),
-		Firstname:             faker.FirstName(),
-		Lastname:              faker.LastName(),
-		Nickname:              faker.Name(),
-		StudentID:             faker.Word(),
-		Faculty:               faker.Word(),
-		Year:                  faker.Word(),
-		Phone:                 faker.Phonenumber(),
-		LineID:                faker.Word(),
-		Email:                 faker.Email(),
-		AllergyFood:           faker.Word(),
-		FoodRestriction:       faker.Word(),
-		AllergyMedicine:       faker.Word(),
-		Disease:               faker.Word(),
-		VaccineCertificateUrl: faker.URL(),
-		ImageUrl:              faker.URL(),
+		Title:           faker.Word(),
+		Firstname:       faker.FirstName(),
+		Lastname:        faker.LastName(),
+		Nickname:        faker.Name(),
+		StudentID:       faker.Word(),
+		Faculty:         faker.Word(),
+		Year:            faker.Word(),
+		Phone:           faker.Phonenumber(),
+		LineID:          faker.Word(),
+		Email:           faker.Email(),
+		AllergyFood:     faker.Word(),
+		FoodRestriction: faker.Word(),
+		AllergyMedicine: faker.Word(),
+		Disease:         faker.Word(),
+		CanSelectBaan:   true,
 	}
 
-	t.UnauthorizedErr = errors.New("unauthorized")
-	t.NotFoundErr = errors.New("not found user")
-	t.ServiceDownErr = errors.New("service is down")
+	t.UnauthorizedErr = errors.New("Unauthorized")
+	t.NotFoundErr = errors.New("Not found user")
+	t.ServiceDownErr = errors.New("Service is down")
 }
 
 func (t *UserServiceTest) TestFindByStudentIDSuccess() {
@@ -65,48 +64,48 @@ func (t *UserServiceTest) TestFindByStudentIDSuccess() {
 }
 
 func (t *UserServiceTest) TestFindByStudentIDUnauthorized() {
-	want := status.Error(codes.Unauthenticated, t.UnauthorizedErr.Error())
-
 	c := &mock.ClientMock{}
 	c.On("FindByStudentID", &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
-		Return(nil, want)
+		Return(nil, status.Error(codes.Unauthenticated, t.NotFoundErr.Error()))
 
 	srv := NewUserService(c)
 
 	actual, err := srv.FindByStudentID(t.UserDto.StudentID)
 
+	st, ok := status.FromError(err)
+	assert.True(t.T(), ok)
 	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), want, err)
+	assert.Equal(t.T(), codes.Unauthenticated, st.Code())
 }
 
 func (t *UserServiceTest) TestFindByStudentIDNotFound() {
-	want := status.Error(codes.NotFound, t.NotFoundErr.Error())
-
 	c := &mock.ClientMock{}
 	c.On("FindByStudentID", &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
-		Return(nil, want)
+		Return(nil, status.Error(codes.NotFound, t.NotFoundErr.Error()))
 
 	srv := NewUserService(c)
 
 	actual, err := srv.FindByStudentID(t.UserDto.StudentID)
 
+	st, ok := status.FromError(err)
+	assert.True(t.T(), ok)
 	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), want, err)
+	assert.Equal(t.T(), codes.NotFound, st.Code())
 }
 
 func (t *UserServiceTest) TestFindByStudentIDGrpcError() {
-	want := status.Error(codes.Unavailable, t.ServiceDownErr.Error())
-
 	c := &mock.ClientMock{}
 	c.On("FindByStudentID", &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
-		Return(nil, want)
+		Return(nil, status.Error(codes.Unavailable, t.ServiceDownErr.Error()))
 
 	srv := NewUserService(c)
 
 	actual, err := srv.FindByStudentID(t.UserDto.StudentID)
 
+	st, ok := status.FromError(err)
+	assert.True(t.T(), ok)
 	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), want, err)
+	assert.Equal(t.T(), codes.Unavailable, st.Code())
 }
 
 func (t *UserServiceTest) TestCreateSuccess() {
@@ -124,24 +123,7 @@ func (t *UserServiceTest) TestCreateSuccess() {
 	assert.Equal(t.T(), want, actual)
 }
 
-func (t *UserServiceTest) TestCreateUnauthorized() {
-	want := t.UnauthorizedErr
-
-	c := &mock.ClientMock{}
-	c.On("Create", &proto.CreateUserRequest{User: &proto.User{}}).
-		Return(nil, status.Error(codes.Unauthenticated, t.UnauthorizedErr.Error()))
-
-	srv := NewUserService(c)
-
-	actual, err := srv.Create(&proto.User{})
-
-	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), want.Error(), err.Error())
-}
-
 func (t *UserServiceTest) TestCreateGrpcErr() {
-	want := t.ServiceDownErr
-
 	c := &mock.ClientMock{}
 	c.On("Create", &proto.CreateUserRequest{User: &proto.User{}}).
 		Return(nil, status.Error(codes.Unavailable, t.ServiceDownErr.Error()))
@@ -150,6 +132,8 @@ func (t *UserServiceTest) TestCreateGrpcErr() {
 
 	actual, err := srv.Create(&proto.User{})
 
+	st, ok := status.FromError(err)
+	assert.True(t.T(), ok)
 	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), want.Error(), err.Error())
+	assert.Equal(t.T(), codes.Unavailable, st.Code())
 }

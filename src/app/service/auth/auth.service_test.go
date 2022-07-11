@@ -53,22 +53,22 @@ func (t *AuthServiceTest) SetupTest() {
 	}
 
 	t.UserDto = &proto.User{
-		Id:                    t.Auth.UserID,
-		Firstname:             faker.FirstName(),
-		Lastname:              faker.LastName(),
-		Nickname:              faker.Name(),
-		StudentID:             "63xxxxxx21",
-		Faculty:               "Faculty of Engineering",
-		Year:                  "3",
-		Phone:                 faker.Phonenumber(),
-		LineID:                faker.Word(),
-		Email:                 faker.Email(),
-		AllergyFood:           faker.Word(),
-		FoodRestriction:       faker.Word(),
-		AllergyMedicine:       faker.Word(),
-		Disease:               faker.Word(),
-		VaccineCertificateUrl: faker.URL(),
-		ImageUrl:              faker.URL(),
+		Id:              t.Auth.UserID,
+		Firstname:       faker.FirstName(),
+		Lastname:        faker.LastName(),
+		Nickname:        faker.Name(),
+		StudentID:       "63xxxxxx21",
+		Faculty:         "Faculty of Engineering",
+		Year:            "3",
+		Title:           faker.Word(),
+		Phone:           faker.Phonenumber(),
+		LineID:          faker.Word(),
+		Email:           faker.Email(),
+		AllergyFood:     faker.Word(),
+		FoodRestriction: faker.Word(),
+		AllergyMedicine: faker.Word(),
+		Disease:         faker.Word(),
+		CanSelectBaan:   true,
 	}
 
 	t.Credential = &proto.Credential{
@@ -111,8 +111,8 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 		Email:       faker.Email(),
 		Disable:     false,
 		Roles:       []string{"student"},
-		Firstname:   faker.FirstName(),
-		Lastname:    faker.LastName(),
+		Firstname:   t.UserDto.Firstname,
+		Lastname:    t.UserDto.Lastname,
 		FirstnameTH: faker.FirstName(),
 		LastnameTH:  faker.LastName(),
 		Ouid:        t.UserDto.StudentID,
@@ -134,6 +134,8 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 		StudentID: t.UserDto.StudentID,
 		Faculty:   t.UserDto.Faculty,
 		Year:      t.UserDto.Year,
+		Firstname: t.UserDto.Firstname,
+		Lastname:  t.UserDto.Lastname,
 	}
 
 	userService := &mock.UserServiceMock{}
