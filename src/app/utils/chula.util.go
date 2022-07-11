@@ -1,19 +1,19 @@
 package utils
 
 import (
-	"github.com/isd-sgcu/rnkm65-auth/src/constant"
+	"github.com/isd-sgcu/rnkm65-auth/src/constant/utils"
 	"github.com/pkg/errors"
 	"strconv"
 )
 
 const CurrentYear = 65
 
-func GetFacultyFromID(sid string) (*constant.Faculty, error) {
+func GetFacultyFromID(sid string) (*utils.Faculty, error) {
 	if len(sid) != 10 {
 		return nil, errors.New("Invalid faculty id")
 	}
 
-	result, ok := constant.Faculties[sid[8:10]]
+	result, ok := utils.Faculties[sid[8:10]]
 	if !ok {
 		return nil, errors.New("Invalid faculty id")
 	}

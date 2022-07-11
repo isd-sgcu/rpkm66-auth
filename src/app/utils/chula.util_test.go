@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/isd-sgcu/rnkm65-auth/src/constant"
+	"github.com/isd-sgcu/rnkm65-auth/src/constant/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -23,7 +23,7 @@ func (t *ChulaUtilTest) TestGetFacultySuccess() {
 }
 
 func testGetFacultySuccess(t *testing.T, sid string, expect string) {
-	want := constant.Faculties[expect]
+	want := utils.Faculties[expect]
 
 	actual, err := GetFacultyFromID(sid)
 

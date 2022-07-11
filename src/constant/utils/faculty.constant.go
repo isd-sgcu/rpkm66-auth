@@ -1,4 +1,4 @@
-package constant
+package utils
 
 type Faculty struct {
 	FacultyEN string `json:"faculty_en"`

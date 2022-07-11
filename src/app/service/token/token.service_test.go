@@ -9,7 +9,7 @@ import (
 	base "github.com/isd-sgcu/rnkm65-auth/src/app/model"
 	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
-	"github.com/isd-sgcu/rnkm65-auth/src/constant"
+	"github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
 	mock "github.com/isd-sgcu/rnkm65-auth/src/mocks/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/mocks/cache"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
@@ -56,7 +56,7 @@ func (t *TokenServiceTest) SetupTest() {
 			DeletedAt: gorm.DeletedAt{},
 		},
 		UserID:       faker.UUIDDigit(),
-		Role:         constant.USER,
+		Role:         auth.USER,
 		RefreshToken: faker.Word(),
 	}
 
@@ -98,7 +98,7 @@ func (t *TokenServiceTest) TestCreateCredentialsSuccess() {
 
 	cacheData := &dto.CacheAuth{
 		Token: t.Credential.AccessToken,
-		Role:  constant.USER,
+		Role:  auth.USER,
 	}
 
 	cacheRepo := cache.RepositoryMock{
@@ -136,7 +136,7 @@ func (t *TokenServiceTest) TestCreateCredentialsInternalErr() {
 func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
 	want := &dto.UserCredential{
 		UserId: t.Token.Claims.(dto.TokenPayloadAuth).UserId,
-		Role:   constant.Role(t.Auth.Role),
+		Role:   auth.Role(t.Auth.Role),
 	}
 	token := faker.Word()
 
@@ -149,7 +149,7 @@ func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
 
 	cacheAuth := dto.CacheAuth{
 		Token: token,
-		Role:  constant.USER,
+		Role:  auth.USER,
 	}
 	cacheRepo := cache.RepositoryMock{}
 	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &dto.CacheAuth{}).Return(&cacheAuth, nil)
@@ -226,7 +226,7 @@ func (t *TokenServiceTest) TestValidateAccessTokenNotMatchWithCache() {
 
 	cacheAuth := dto.CacheAuth{
 		Token: faker.Word(),
-		Role:  constant.Role(t.Auth.Role),
+		Role:  auth.Role(t.Auth.Role),
 	}
 
 	jwtSrv := mock.JwtServiceMock{}

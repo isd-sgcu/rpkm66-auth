@@ -2,7 +2,7 @@ package auth
 
 import (
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/isd-sgcu/rnkm65-auth/src/constant"
+	"github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
 )
 
 type ChulaSSOCredential struct {
@@ -25,11 +25,11 @@ type TokenPayloadAuth struct {
 }
 
 type UserCredential struct {
-	UserId string        `json:"user_id"`
-	Role   constant.Role `json:"role"`
+	UserId string    `json:"user_id"`
+	Role   auth.Role `json:"role"`
 }
 
 type CacheAuth struct {
-	Token string        `json:"token"`
-	Role  constant.Role `json:"role"`
+	Token string    `json:"token"`
+	Role  auth.Role `json:"role"`
 }

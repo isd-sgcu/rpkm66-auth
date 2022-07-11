@@ -9,7 +9,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-auth/src/app/model"
 	"github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/app/utils"
-	"github.com/isd-sgcu/rnkm65-auth/src/constant"
+	role "github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
 	mock "github.com/isd-sgcu/rnkm65-auth/src/mocks/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/pkg/errors"
@@ -48,7 +48,7 @@ func (t *AuthServiceTest) SetupTest() {
 			DeletedAt: gorm.DeletedAt{},
 		},
 		UserID:       faker.UUIDDigit(),
-		Role:         constant.USER,
+		Role:         role.USER,
 		RefreshToken: faker.Word(),
 	}
 
@@ -88,7 +88,7 @@ func (t *AuthServiceTest) SetupTest() {
 
 	t.UserCredential = &dto.UserCredential{
 		UserId: t.Auth.UserID,
-		Role:   constant.Role(t.Auth.Role),
+		Role:   role.Role(t.Auth.Role),
 	}
 
 	t.UnauthorizedErr = errors.New("unauthorized")
@@ -120,7 +120,7 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 
 	a := &auth.Auth{
 		UserID: t.UserDto.Id,
-		Role:   constant.USER,
+		Role:   role.USER,
 	}
 
 	repo := &mock.RepositoryMock{}
