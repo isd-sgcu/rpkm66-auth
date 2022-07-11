@@ -101,7 +101,7 @@ func main() {
 			Msg("Failed to start service")
 	}
 
-	cacheDb, err := database.InitRedisConnect(&conf.Redis)
+	cacheDB, err := database.InitRedisConnect(&conf.Redis)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -129,7 +129,7 @@ func main() {
 
 	cSSO := client.NewChulaSSO(conf.ChulaSSO)
 
-	cacheRepo := cache.NewRepository(cacheDb)
+	cacheRepo := cache.NewRepository(cacheDB)
 
 	usrClient := proto.NewUserServiceClient(backendConn)
 	usrSrv := user.NewUserService(usrClient)
@@ -170,6 +170,9 @@ func main() {
 		"server": func(ctx context.Context) error {
 			grpcServer.GracefulStop()
 			return nil
+		},
+		"cache": func(ctx context.Context) error {
+			return cacheDB.Close()
 		},
 	})
 
