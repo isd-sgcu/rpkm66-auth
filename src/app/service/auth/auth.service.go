@@ -5,6 +5,7 @@ import (
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/app/utils"
+	role "github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
@@ -123,7 +124,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 				}
 
 				auth = model.Auth{
-					Role:   auth.USER,
+					Role:   role.USER,
 					UserID: user.Id,
 				}
 

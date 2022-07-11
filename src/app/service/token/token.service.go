@@ -7,6 +7,7 @@ import (
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
+	role "github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
@@ -44,7 +45,7 @@ func (s *Service) CreateCredentials(auth *model.Auth, secret string) (*proto.Cre
 
 	cache := dto.CacheAuth{
 		Token: token,
-		Role:  auth.Role(auth.Role),
+		Role:  role.Role(auth.Role),
 	}
 
 	err = s.cacheRepository.SaveCache(auth.UserID, &cache, int(s.jwtService.GetConfig().ExpiresIn))
