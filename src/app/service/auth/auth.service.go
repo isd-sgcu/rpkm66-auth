@@ -191,7 +191,7 @@ func (s *Service) Validate(_ context.Context, req *proto.ValidateRequest) (res *
 func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest) (res *proto.RefreshTokenResponse, err error) {
 	auth := model.Auth{}
 
-	err = s.repo.FindByRefreshToken(req.RefreshToken, &auth)
+	err = s.repo.FindByRefreshToken(utils.Hash([]byte(req.RefreshToken)), &auth)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "Invalid refresh token")
 	}
@@ -214,7 +214,7 @@ func (s *Service) CreateNewCredential(auth *model.Auth) (*proto.Credential, erro
 		return nil, err
 	}
 
-	auth.RefreshToken = credentials.RefreshToken
+	auth.RefreshToken = utils.Hash([]byte(credentials.RefreshToken))
 
 	err = s.repo.Update(auth.ID.String(), auth)
 	if err != nil {
