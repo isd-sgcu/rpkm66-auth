@@ -103,6 +103,8 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 		Credential: t.Credential,
 	}
 
+	t.Auth.RefreshToken = utils.Hash([]byte(t.Auth.RefreshToken))
+
 	ticket := faker.Word()
 	chulaSSORes := &dto.ChulaSSOCredential{
 		UID:         faker.Word(),
@@ -272,13 +274,13 @@ func (t *AuthServiceTest) TestValidateInvalidToken() {
 }
 
 func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
+	token := faker.Word()
+	t.Auth.RefreshToken = utils.Hash([]byte(t.Credential.RefreshToken))
+
 	want := &proto.RefreshTokenResponse{Credential: t.Credential}
 
-	//token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
-	token := t.Credential.RefreshToken
-
 	repo := &mock.RepositoryMock{}
-	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(t.Auth, nil)
+	repo.On("FindByRefreshToken", utils.Hash([]byte(token)), &auth.Auth{}).Return(t.Auth, nil)
 	repo.On("Update", t.Auth).Return(t.Auth, nil)
 
 	chulaSSOClient := &mock.ChulaSSOClientMock{}
@@ -298,8 +300,8 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 }
 
 func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
-	//token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
-	token := t.Credential.RefreshToken
+	token := faker.Word()
+	t.Credential.RefreshToken = utils.Hash([]byte(token))
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(nil, errors.New("Not found token"))
@@ -325,8 +327,8 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
 }
 
 func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
-	//token, _ := utils.Encrypt([]byte(t.secret), t.Credential.RefreshToken)
-	token := t.Credential.RefreshToken
+	token := faker.Word()
+	t.Credential.RefreshToken = utils.Hash([]byte(token))
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", t.Credential.RefreshToken, &auth.Auth{}).Return(t.Auth, nil)
@@ -351,9 +353,10 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
 }
 
 func (t *AuthServiceTest) TestCreateCredentialsSuccess() {
+	token := faker.Word()
+	t.Credential.RefreshToken = utils.Hash([]byte(faker.Word()))
+
 	want := t.Credential
-	token, _ := utils.Encrypt([]byte(t.secret), faker.Word())
-	t.Credential.RefreshToken = faker.Word()
 
 	repo := &mock.RepositoryMock{}
 	repo.On("Update", t.Auth).Return(t.Auth, nil)
@@ -372,14 +375,13 @@ func (t *AuthServiceTest) TestCreateCredentialsSuccess() {
 
 	assert.Nilf(t.T(), err, "error: %v", err)
 	assert.Equal(t.T(), want, credentials)
-	assert.Equal(t.T(), t.Credential.RefreshToken, t.Auth.RefreshToken)
 }
 
 func (t *AuthServiceTest) TestCreateCredentialsInternalErr() {
 	want := errors.New("Invalid secret key")
 
-	token, _ := utils.Encrypt([]byte(t.secret), faker.Word())
-	t.Credential.RefreshToken = faker.Word()
+	token := faker.Word()
+	t.Credential.RefreshToken = utils.Hash([]byte(faker.Word()))
 
 	repo := &mock.RepositoryMock{}
 	repo.On("Update", t.Auth).Return(t.Auth, nil)

@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"github.com/pkg/errors"
 	"io"
@@ -55,4 +56,10 @@ func Decrypt(secret []byte, secure string) (decoded string, err error) {
 	stream.XORKeyStream(cipherText, cipherText)
 
 	return string(cipherText), err
+}
+
+func Hash(bv []byte) string {
+	h := sha256.New()
+	h.Write(bv)
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
