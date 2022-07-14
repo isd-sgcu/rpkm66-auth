@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  local-db:
+    image: mysql:8.0.28-oracle
+    container_name: rnkm-local-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: rnkm-auth-db
+    volumes:
+      - ./volumes/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  chula-sso-mock:
+    image: pay2630/chulassomock
+    restart: unless-stopped
+    environment:
+      SSO_URL: http://localhost:8080
+      SSO_APPID: APPID
+      SSO_APPSECRET: APPSECRET
+    ports:
+      - "8080:8080"
