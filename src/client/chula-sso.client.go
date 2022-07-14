@@ -4,7 +4,8 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
-	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net/http"
 )
 
@@ -28,11 +29,15 @@ func (c *ChulaSSO) VerifyTicket(ticket string, result *auth.ChulaSSOCredential) 
 		Post("/serviceValidation")
 
 	if err != nil {
-		return err
+		return status.Error(codes.Unauthenticated, "Invalid ticket")
+	}
+
+	if res.StatusCode() == http.StatusTooManyRequests {
+		return status.Error(codes.Unavailable, err.Error())
 	}
 
 	if res.StatusCode() != http.StatusOK {
-		return errors.New("Invalid ticket")
+		return status.Error(codes.Unauthenticated, "Invalid ticket")
 	}
 
 	return nil

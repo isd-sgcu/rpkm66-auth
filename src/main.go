@@ -140,7 +140,7 @@ func main() {
 	tkSrv := ts.NewTokenService(jtSrv, cacheRepo)
 
 	aRepo := ar.NewRepository(db)
-	aSrv := as.NewService(aRepo, cSSO, tkSrv, usrSrv, conf.App.Secret)
+	aSrv := as.NewService(aRepo, cSSO, tkSrv, usrSrv, conf.App)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterAuthServiceServer(grpcServer, aSrv)

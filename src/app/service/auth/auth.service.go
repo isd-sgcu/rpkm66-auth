@@ -5,6 +5,7 @@ import (
 	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/app/utils"
+	"github.com/isd-sgcu/rnkm65-auth/src/config"
 	role "github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/proto"
 	"github.com/rs/zerolog/log"
@@ -18,7 +19,7 @@ type Service struct {
 	chulaSSOClient IChulaSSOClient
 	tokenService   ITokenService
 	userService    IUserService
-	secret         string
+	conf           config.App
 }
 
 type IRepository interface {
@@ -47,14 +48,14 @@ func NewService(
 	chulaSSOClient IChulaSSOClient,
 	tokenService ITokenService,
 	userService IUserService,
-	secret string,
+	conf config.App,
 ) *Service {
 	return &Service{
 		repo:           repo,
 		chulaSSOClient: chulaSSOClient,
 		tokenService:   tokenService,
 		userService:    userService,
-		secret:         secret,
+		conf:           conf,
 	}
 }
 
@@ -69,7 +70,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 			Str("service", "auth service").
 			Str("module", "verify ticket").
 			Msgf("Someone is trying to logging in using SSO ticket")
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+		return nil, err
 	}
 
 	user, err := s.userService.FindByStudentID(ssoData.Ouid)
@@ -94,11 +95,16 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 						Err(err).
 						Str("service", "auth").
 						Str("module", "verify ticket").
-						Msgf("Cannot parse %s to int of student id %s", year, ssoData.Ouid)
+						Msg("Cannot parse student id to int")
 					return nil, status.Error(codes.Internal, "Internal service error")
 				}
 
-				if yearInt > 3 {
+				if yearInt > s.conf.MaxRestrictYear {
+					log.Error().
+						Str("service", "auth").
+						Str("module", "verify ticket").
+						Str("student_id", ssoData.Ouid).
+						Msg("Someone is trying to login (forbidden year)")
 					return nil, status.Error(codes.PermissionDenied, "Forbidden study year")
 				}
 
@@ -108,7 +114,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 						Err(err).
 						Str("service", "auth").
 						Str("module", "verify ticket").
-						Msgf("Cannot get %s from faculty id of student id %s", year, ssoData.Ouid)
+						Msg("Cannot get faculty from student id")
 					return nil, status.Error(codes.Internal, "Internal service error")
 				}
 
@@ -171,7 +177,8 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 	log.Info().
 		Str("service", "auth").
 		Str("module", "verify ticket").
-		Msgf("User %s login to the service", user.StudentID)
+		Str("student_id", user.StudentID).
+		Msg("User login to the service")
 
 	return &proto.VerifyTicketResponse{Credential: credentials}, err
 }
@@ -209,7 +216,7 @@ func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest
 }
 
 func (s *Service) CreateNewCredential(auth *model.Auth) (*proto.Credential, error) {
-	credentials, err := s.tokenService.CreateCredentials(auth, s.secret)
+	credentials, err := s.tokenService.CreateCredentials(auth, s.conf.Secret)
 	if err != nil {
 		return nil, err
 	}
