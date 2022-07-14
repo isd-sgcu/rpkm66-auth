@@ -13,6 +13,7 @@ app:
   port: 3002
   debug: true
   secret: <secret>
+  max_restrict_year: 3
 
 chula-sso:
   host: https://account.it.chula.ac.th
