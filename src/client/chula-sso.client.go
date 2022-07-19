@@ -52,6 +52,7 @@ func (c *ChulaSSO) VerifyTicket(ticket string, result *auth.ChulaSSOCredential) 
 		log.Error().
 			Str("service", "chula sso client").
 			Str("module", "verify ticket").
+			Str("status", res.Status()).
 			Str("student_id", result.Ouid).
 			Msg("Invalid sso status")
 
