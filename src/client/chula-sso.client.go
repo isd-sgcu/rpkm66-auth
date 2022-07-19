@@ -4,6 +4,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
 	"github.com/isd-sgcu/rnkm65-auth/src/config"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"net/http"
@@ -29,14 +30,31 @@ func (c *ChulaSSO) VerifyTicket(ticket string, result *auth.ChulaSSOCredential) 
 		Post("/serviceValidation")
 
 	if err != nil {
+		log.Error().
+			Str("service", "chula sso client").
+			Str("module", "verify ticket").
+			Str("student_id", result.Ouid).
+			Msg("Invalid ticket")
 		return status.Error(codes.Unauthenticated, "Invalid ticket")
 	}
 
 	if res.StatusCode() == http.StatusTooManyRequests {
+		log.Error().
+			Str("service", "chula sso client").
+			Str("module", "verify ticket").
+			Str("student_id", result.Ouid).
+			Msg("Reach SSO Limit")
+
 		return status.Error(codes.Unavailable, err.Error())
 	}
 
 	if res.StatusCode() != http.StatusOK {
+		log.Error().
+			Str("service", "chula sso client").
+			Str("module", "verify ticket").
+			Str("student_id", result.Ouid).
+			Msg("Invalid sso status")
+
 		return status.Error(codes.Unauthenticated, "Invalid ticket")
 	}
 

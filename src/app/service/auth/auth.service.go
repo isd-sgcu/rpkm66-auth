@@ -85,7 +85,8 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 						Err(err).
 						Str("service", "auth").
 						Str("module", "verify ticket").
-						Msgf("Cannot parse %s to int of student id %s", year, ssoData.Ouid)
+						Str("student_id", ssoData.Ouid).
+						Msg("Cannot parse year to to int")
 					return nil, status.Error(codes.Internal, "Internal service error")
 				}
 
@@ -95,6 +96,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 						Err(err).
 						Str("service", "auth").
 						Str("module", "verify ticket").
+						Str("student_id", ssoData.Ouid).
 						Msg("Cannot parse student id to int")
 					return nil, status.Error(codes.Internal, "Internal service error")
 				}
@@ -114,6 +116,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 						Err(err).
 						Str("service", "auth").
 						Str("module", "verify ticket").
+						Str("student_id", ssoData.Ouid).
 						Msg("Cannot get faculty from student id")
 					return nil, status.Error(codes.Internal, "Internal service error")
 				}
@@ -142,6 +145,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 						Err(err).
 						Str("service", "auth").
 						Str("module", "verify ticket").
+						Str("student_id", ssoData.Ouid).
 						Msg("Error creating the auth data")
 					return nil, status.Error(codes.Unavailable, st.Message())
 				}
@@ -151,6 +155,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 					Err(err).
 					Str("service", "auth").
 					Str("module", "verify ticket").
+					Str("student_id", ssoData.Ouid).
 					Msg("Service is down")
 				return nil, status.Error(codes.Unavailable, st.Message())
 			}
@@ -159,6 +164,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 				Err(err).
 				Str("service", "auth").
 				Str("module", "verify ticket").
+				Str("student_id", ssoData.Ouid).
 				Msg("Error connect to sso")
 			return nil, status.Error(codes.Unavailable, "Service is down")
 		}
