@@ -45,7 +45,7 @@ func (c *ChulaSSO) VerifyTicket(ticket string, result *auth.ChulaSSOCredential) 
 			Str("student_id", result.Ouid).
 			Msg("Reach SSO Limit")
 
-		return status.Error(codes.Unavailable, err.Error())
+		return status.Error(codes.ResourceExhausted, err.Error())
 	}
 
 	if res.StatusCode() != http.StatusOK {
