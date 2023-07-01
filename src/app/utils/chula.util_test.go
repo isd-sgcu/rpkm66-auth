@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/isd-sgcu/rnkm65-auth/src/constant/utils"
+	"github.com/isd-sgcu/rpkm66-auth/src/constant/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"

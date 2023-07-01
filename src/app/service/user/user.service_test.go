@@ -2,8 +2,8 @@ package user
 
 import (
 	"github.com/bxcodec/faker/v3"
-	mock "github.com/isd-sgcu/rnkm65-auth/src/mocks/user"
-	"github.com/isd-sgcu/rnkm65-auth/src/proto"
+	mock "github.com/isd-sgcu/rpkm66-auth/src/mocks/user"
+	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"

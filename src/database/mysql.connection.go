@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-	"github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
-	"github.com/isd-sgcu/rnkm65-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"strconv"

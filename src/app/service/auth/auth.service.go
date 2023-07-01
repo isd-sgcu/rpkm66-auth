@@ -2,12 +2,12 @@ package auth
 
 import (
 	"context"
-	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
-	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
-	"github.com/isd-sgcu/rnkm65-auth/src/app/utils"
-	"github.com/isd-sgcu/rnkm65-auth/src/config"
-	role "github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
-	"github.com/isd-sgcu/rnkm65-auth/src/proto"
+	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
+	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/utils"
+	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

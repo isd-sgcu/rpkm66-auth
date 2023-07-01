@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"github.com/isd-sgcu/rnkm65-auth/src/proto"
+	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"time"
 )
 

@@ -2,7 +2,7 @@ package auth
 
 import (
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/isd-sgcu/rnkm65-auth/src/constant/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
 )
 
 type ChulaSSOCredential struct {

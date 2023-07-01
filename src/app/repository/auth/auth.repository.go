@@ -1,7 +1,7 @@
 package auth
 
 import (
-	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
+	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
 	"gorm.io/gorm"
 )
 

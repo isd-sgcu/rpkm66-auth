@@ -2,8 +2,8 @@ package client
 
 import (
 	"github.com/go-resty/resty/v2"
-	"github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
-	"github.com/isd-sgcu/rnkm65-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

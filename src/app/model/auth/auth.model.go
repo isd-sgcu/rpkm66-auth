@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/isd-sgcu/rnkm65-auth/src/app/model"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/model"
 )
 
 type Auth struct {

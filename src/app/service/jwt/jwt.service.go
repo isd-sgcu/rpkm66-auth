@@ -2,9 +2,9 @@ package jwt
 
 import (
 	_jwt "github.com/golang-jwt/jwt/v4"
-	dto "github.com/isd-sgcu/rnkm65-auth/src/app/dto/auth"
-	model "github.com/isd-sgcu/rnkm65-auth/src/app/model/auth"
-	"github.com/isd-sgcu/rnkm65-auth/src/config"
+	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
+	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	"github.com/pkg/errors"
 	"time"
 )

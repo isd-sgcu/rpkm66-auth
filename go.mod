@@ -1,6 +1,6 @@
-module github.com/isd-sgcu/rnkm65-auth
+module github.com/isd-sgcu/rpkm66-auth
 
-go 1.18
+go 1.20
 
 require (
 	github.com/bxcodec/faker/v3 v3.8.0

@@ -3,17 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	ar "github.com/isd-sgcu/rnkm65-auth/src/app/repository/auth"
-	"github.com/isd-sgcu/rnkm65-auth/src/app/repository/cache"
-	as "github.com/isd-sgcu/rnkm65-auth/src/app/service/auth"
-	js "github.com/isd-sgcu/rnkm65-auth/src/app/service/jwt"
-	ts "github.com/isd-sgcu/rnkm65-auth/src/app/service/token"
-	"github.com/isd-sgcu/rnkm65-auth/src/app/service/user"
-	jsg "github.com/isd-sgcu/rnkm65-auth/src/app/strategy"
-	"github.com/isd-sgcu/rnkm65-auth/src/client"
-	"github.com/isd-sgcu/rnkm65-auth/src/config"
-	"github.com/isd-sgcu/rnkm65-auth/src/database"
-	"github.com/isd-sgcu/rnkm65-auth/src/proto"
+	ar "github.com/isd-sgcu/rpkm66-auth/src/app/repository/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/repository/cache"
+	as "github.com/isd-sgcu/rpkm66-auth/src/app/service/auth"
+	js "github.com/isd-sgcu/rpkm66-auth/src/app/service/jwt"
+	ts "github.com/isd-sgcu/rpkm66-auth/src/app/service/token"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/service/user"
+	jsg "github.com/isd-sgcu/rpkm66-auth/src/app/strategy"
+	"github.com/isd-sgcu/rpkm66-auth/src/client"
+	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/database"
+	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -149,7 +149,7 @@ func main() {
 	go func() {
 		log.Info().
 			Str("service", "auth").
-			Msgf("RNKM65 auth starting at port %v", conf.App.Port)
+			Msgf("rpkm66 auth starting at port %v", conf.App.Port)
 
 		if err = grpcServer.Serve(lis); err != nil {
 			log.Fatal().
