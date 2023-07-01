@@ -6,13 +6,13 @@ redis:
 
 database:
   host: localhost
-  port: 3306
+  port: 5432
   name: rnkm-auth-db
   username: root
   password: root
 
 app:
-  port: 3002
+  port: 3000
   debug: true
   secret: <secret>
   max_restrict_year: 3
