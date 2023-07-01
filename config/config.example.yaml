@@ -1,6 +1,8 @@
 redis:
-  host: localhost:6379
+  host: localhost
+  port: 6379
   password: ""
+  denum: 2
 
 database:
   host: localhost
