@@ -7,7 +7,7 @@ import (
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/app/utils"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/cfgldr"
 	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/pkg/client/chula_sso"
 	auth_repo "github.com/isd-sgcu/rpkm66-auth/src/pkg/repository/auth"
@@ -24,7 +24,7 @@ type serviceImpl struct {
 	chulaSSOClient chula_sso.ChulaSSO
 	tokenService   token_svc.Service
 	userService    user_svc.Service
-	conf           config.App
+	conf           cfgldr.App
 }
 
 func NewService(
@@ -32,7 +32,7 @@ func NewService(
 	chulaSSOClient chula_sso.ChulaSSO,
 	tokenService token_svc.Service,
 	userService user_svc.Service,
-	conf config.App,
+	conf cfgldr.App,
 ) *serviceImpl {
 	return &serviceImpl{
 		repo:           repo,

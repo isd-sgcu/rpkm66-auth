@@ -6,17 +6,17 @@ import (
 	_jwt "github.com/golang-jwt/jwt/v4"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/cfgldr"
 	"github.com/isd-sgcu/rpkm66-auth/src/pkg/strategy"
 	"github.com/pkg/errors"
 )
 
 type serviceImpl struct {
-	conf     config.Jwt
+	conf     cfgldr.Jwt
 	strategy strategy.JwtStrategy
 }
 
-func NewJwtService(conf config.Jwt, strategy strategy.JwtStrategy) *serviceImpl {
+func NewJwtService(conf cfgldr.Jwt, strategy strategy.JwtStrategy) *serviceImpl {
 	return &serviceImpl{
 		conf:     conf,
 		strategy: strategy,
@@ -46,6 +46,6 @@ func (s *serviceImpl) VerifyAuth(token string) (*_jwt.Token, error) {
 	return _jwt.Parse(token, s.strategy.AuthDecode)
 }
 
-func (s *serviceImpl) GetConfig() *config.Jwt {
+func (s *serviceImpl) GetConfig() *cfgldr.Jwt {
 	return &s.conf
 }

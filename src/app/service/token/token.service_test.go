@@ -11,7 +11,7 @@ import (
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
 	base "github.com/isd-sgcu/rpkm66-auth/src/app/entity"
 	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/cfgldr"
 	"github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
 	mock "github.com/isd-sgcu/rpkm66-auth/src/mocks/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/mocks/cache"
@@ -29,7 +29,7 @@ type TokenServiceTest struct {
 	Token        *jwt.Token
 	TokenDecoded jwt.MapClaims
 	Payload      *dto.TokenPayloadAuth
-	Conf         *config.Jwt
+	Conf         *cfgldr.Jwt
 }
 
 func TestTokenService(t *testing.T) {
@@ -37,7 +37,7 @@ func TestTokenService(t *testing.T) {
 }
 
 func (t *TokenServiceTest) SetupTest() {
-	t.Conf = &config.Jwt{
+	t.Conf = &cfgldr.Jwt{
 		Secret:    faker.Word(),
 		ExpiresIn: 3600,
 		Issuer:    faker.Word(),
@@ -200,7 +200,7 @@ func testValidateAccessTokenInvalidTokenMalformedToken(t *testing.T, refreshToke
 	assert.Equal(t, want.Error(), err.Error())
 }
 
-func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *config.Jwt, tokenDecoded *jwt.Token, errMsg string) {
+func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *cfgldr.Jwt, tokenDecoded *jwt.Token, errMsg string) {
 	want := errors.New(errMsg)
 
 	in := faker.Word()

@@ -4,7 +4,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/cfgldr"
 	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/stretchr/testify/mock"
 )
@@ -111,10 +111,10 @@ func (s *JwtServiceMock) VerifyAuth(token string) (decode *jwt.Token, err error)
 	return decode, args.Error(1)
 }
 
-func (s *JwtServiceMock) GetConfig() *config.Jwt {
+func (s *JwtServiceMock) GetConfig() *cfgldr.Jwt {
 	args := s.Called()
 
-	return args.Get(0).(*config.Jwt)
+	return args.Get(0).(*cfgldr.Jwt)
 }
 
 type TokenServiceMock struct {

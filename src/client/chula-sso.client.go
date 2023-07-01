@@ -1,20 +1,21 @@
 package client
 
 import (
+	"net/http"
+
 	"github.com/go-resty/resty/v2"
 	"github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/cfgldr"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"net/http"
 )
 
 type ChulaSSO struct {
 	client *resty.Client
 }
 
-func NewChulaSSO(conf config.ChulaSSO) *ChulaSSO {
+func NewChulaSSO(conf cfgldr.ChulaSSO) *ChulaSSO {
 	client := resty.New().
 		SetHeader("DeeAppID", conf.DeeAppID).
 		SetHeader("DeeAppSecret", conf.DeeAppSecret).

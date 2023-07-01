@@ -5,7 +5,7 @@ import (
 
 	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/app/service/auth"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/cfgldr"
 	"github.com/isd-sgcu/rpkm66-auth/src/pkg/client/chula_sso"
 	auth_repo "github.com/isd-sgcu/rpkm66-auth/src/pkg/repository/auth"
 	token_svc "github.com/isd-sgcu/rpkm66-auth/src/pkg/service/token"
@@ -25,7 +25,7 @@ func NewService(
 	chulaSSOClient chula_sso.ChulaSSO,
 	tokenService token_svc.Service,
 	userService user_svc.Service,
-	conf config.App,
+	conf cfgldr.App,
 ) Service {
 	return auth.NewService(repo, chulaSSOClient, tokenService, userService, conf)
 }

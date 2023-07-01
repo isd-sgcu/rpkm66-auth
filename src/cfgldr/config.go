@@ -1,4 +1,4 @@
-package config
+package cfgldr
 
 import (
 	"github.com/pkg/errors"

@@ -12,7 +12,7 @@ import (
 	"github.com/isd-sgcu/rpkm66-auth/src/app/entity"
 	"github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/app/utils"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/cfgldr"
 	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
 	mock "github.com/isd-sgcu/rpkm66-auth/src/mocks/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/proto"
@@ -31,7 +31,7 @@ type AuthServiceTest struct {
 	Credential      *proto.Credential
 	Payload         *dto.TokenPayloadAuth
 	UserCredential  *dto.UserCredential
-	conf            config.App
+	conf            cfgldr.App
 	UnauthorizedErr error
 	NotFoundErr     error
 	ServiceDownErr  error
@@ -97,7 +97,7 @@ func (t *AuthServiceTest) SetupTest() {
 	t.NotFoundErr = errors.New("not found user")
 	t.ServiceDownErr = errors.New("service is down")
 
-	t.conf = config.App{
+	t.conf = cfgldr.App{
 		Port:            3001,
 		Debug:           false,
 		Secret:          "asuperstrong32bitpasswordgohere!",
