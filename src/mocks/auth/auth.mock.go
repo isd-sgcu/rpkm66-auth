@@ -3,7 +3,7 @@ package auth
 import (
 	"github.com/golang-jwt/jwt/v4"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
-	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/stretchr/testify/mock"
@@ -13,41 +13,41 @@ type RepositoryMock struct {
 	mock.Mock
 }
 
-func (r *RepositoryMock) FindByRefreshToken(id string, result *model.Auth) error {
+func (r *RepositoryMock) FindByRefreshToken(id string, result *entity.Auth) error {
 	args := r.Called(id, result)
 
 	if args.Get(0) != nil {
-		*result = *args.Get(0).(*model.Auth)
+		*result = *args.Get(0).(*entity.Auth)
 	}
 
 	return args.Error(1)
 }
 
-func (r *RepositoryMock) FindByUserID(id string, in *model.Auth) error {
+func (r *RepositoryMock) FindByUserID(id string, in *entity.Auth) error {
 	args := r.Called(id, in)
 
 	if args.Get(0) != nil {
-		*in = *args.Get(0).(*model.Auth)
+		*in = *args.Get(0).(*entity.Auth)
 	}
 
 	return args.Error(1)
 }
 
-func (r *RepositoryMock) Create(in *model.Auth) error {
+func (r *RepositoryMock) Create(in *entity.Auth) error {
 	args := r.Called(in)
 
 	if args.Get(0) != nil {
-		*in = *args.Get(0).(*model.Auth)
+		*in = *args.Get(0).(*entity.Auth)
 	}
 
 	return args.Error(1)
 }
 
-func (r *RepositoryMock) Update(id string, in *model.Auth) error {
+func (r *RepositoryMock) Update(id string, in *entity.Auth) error {
 	args := r.Called(in)
 
 	if args.Get(0) != nil {
-		*in = *args.Get(0).(*model.Auth)
+		*in = *args.Get(0).(*entity.Auth)
 	}
 
 	return args.Error(1)
@@ -95,7 +95,7 @@ type JwtServiceMock struct {
 	mock.Mock
 }
 
-func (s *JwtServiceMock) SignAuth(in *model.Auth) (token string, err error) {
+func (s *JwtServiceMock) SignAuth(in *entity.Auth) (token string, err error) {
 	args := s.Called(in)
 
 	return args.String(0), args.Error(1)
@@ -121,7 +121,7 @@ type TokenServiceMock struct {
 	mock.Mock
 }
 
-func (s *TokenServiceMock) CreateCredentials(in *model.Auth, secret string) (credential *proto.Credential, err error) {
+func (s *TokenServiceMock) CreateCredentials(in *entity.Auth, secret string) (credential *proto.Credential, err error) {
 	args := s.Called(in, secret)
 
 	if args.Get(0) != nil {

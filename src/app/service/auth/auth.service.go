@@ -2,8 +2,10 @@ package auth
 
 import (
 	"context"
+	"strconv"
+
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
-	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/app/utils"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
@@ -11,7 +13,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strconv"
 )
 
 type Service struct {
@@ -23,10 +24,10 @@ type Service struct {
 }
 
 type IRepository interface {
-	FindByRefreshToken(string, *model.Auth) error
-	FindByUserID(string, *model.Auth) error
-	Create(*model.Auth) error
-	Update(string, *model.Auth) error
+	FindByRefreshToken(string, *entity.Auth) error
+	FindByUserID(string, *entity.Auth) error
+	Create(*entity.Auth) error
+	Update(string, *entity.Auth) error
 }
 
 type IChulaSSOClient interface {
@@ -39,7 +40,7 @@ type IUserService interface {
 }
 
 type ITokenService interface {
-	CreateCredentials(*model.Auth, string) (*proto.Credential, error)
+	CreateCredentials(*entity.Auth, string) (*proto.Credential, error)
 	Validate(string) (*dto.UserCredential, error)
 }
 
@@ -61,7 +62,7 @@ func NewService(
 
 func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest) (res *proto.VerifyTicketResponse, err error) {
 	ssoData := dto.ChulaSSOCredential{}
-	auth := model.Auth{}
+	auth := entity.Auth{}
 
 	err = s.chulaSSOClient.VerifyTicket(req.Ticket, &ssoData)
 	if err != nil {
@@ -134,7 +135,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 					return nil, status.Error(codes.InvalidArgument, st.Message())
 				}
 
-				auth = model.Auth{
+				auth = entity.Auth{
 					Role:   role.USER,
 					UserID: user.Id,
 				}
@@ -202,7 +203,7 @@ func (s *Service) Validate(_ context.Context, req *proto.ValidateRequest) (res *
 }
 
 func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest) (res *proto.RefreshTokenResponse, err error) {
-	auth := model.Auth{}
+	auth := entity.Auth{}
 
 	err = s.repo.FindByRefreshToken(utils.Hash([]byte(req.RefreshToken)), &auth)
 	if err != nil {
@@ -221,7 +222,7 @@ func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest
 	return &proto.RefreshTokenResponse{Credential: credentials}, nil
 }
 
-func (s *Service) CreateNewCredential(auth *model.Auth) (*proto.Credential, error) {
+func (s *Service) CreateNewCredential(auth *entity.Auth) (*proto.Credential, error) {
 	credentials, err := s.tokenService.CreateCredentials(auth, s.conf.Secret)
 	if err != nil {
 		return nil, err

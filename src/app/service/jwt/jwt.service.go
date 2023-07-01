@@ -1,12 +1,13 @@
 package jwt
 
 import (
+	"time"
+
 	_jwt "github.com/golang-jwt/jwt/v4"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
-	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type IStrategy interface {
@@ -25,7 +26,7 @@ func NewJwtService(conf config.Jwt, strategy IStrategy) *Service {
 	}
 }
 
-func (s *Service) SignAuth(in *model.Auth) (string, error) {
+func (s *Service) SignAuth(in *entity.Auth) (string, error) {
 	payloads := &dto.TokenPayloadAuth{
 		RegisteredClaims: _jwt.RegisteredClaims{
 			Issuer:    s.conf.Issuer,

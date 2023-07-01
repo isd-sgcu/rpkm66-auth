@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

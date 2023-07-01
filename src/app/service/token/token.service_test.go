@@ -1,13 +1,16 @@
 package token
 
 import (
+	"testing"
+	"time"
+
 	"github.com/bxcodec/faker/v3"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
-	base "github.com/isd-sgcu/rpkm66-auth/src/app/model"
-	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	base "github.com/isd-sgcu/rpkm66-auth/src/app/entity"
+	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	"github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
 	mock "github.com/isd-sgcu/rpkm66-auth/src/mocks/auth"
@@ -17,14 +20,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
 
 type TokenServiceTest struct {
 	suite.Suite
 	Credential   *proto.Credential
-	Auth         *model.Auth
+	Auth         *entity.Auth
 	Token        *jwt.Token
 	TokenDecoded jwt.MapClaims
 	Payload      *dto.TokenPayloadAuth
@@ -48,7 +49,7 @@ func (t *TokenServiceTest) SetupTest() {
 		ExpiresIn:    3600,
 	}
 
-	t.Auth = &model.Auth{
+	t.Auth = &entity.Auth{
 		Base: base.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},

@@ -1,17 +1,18 @@
 package token
 
 import (
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
-	model "github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
-	"time"
 )
 
 type Service struct {
@@ -20,7 +21,7 @@ type Service struct {
 }
 
 type IJwtService interface {
-	SignAuth(*model.Auth) (string, error)
+	SignAuth(*entity.Auth) (string, error)
 	VerifyAuth(string) (*jwt.Token, error)
 	GetConfig() *config.Jwt
 }
@@ -37,7 +38,7 @@ func NewTokenService(jwtService IJwtService, cacheRepository ICacheRepository) *
 	}
 }
 
-func (s *Service) CreateCredentials(auth *model.Auth, secret string) (*proto.Credential, error) {
+func (s *Service) CreateCredentials(auth *entity.Auth, secret string) (*proto.Credential, error) {
 	token, err := s.jwtService.SignAuth(auth)
 	if err != nil {
 		return nil, err

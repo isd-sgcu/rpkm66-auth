@@ -2,12 +2,15 @@ package auth
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/bxcodec/faker/v3"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
-	"github.com/isd-sgcu/rpkm66-auth/src/app/model"
-	"github.com/isd-sgcu/rpkm66-auth/src/app/model/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/app/utils"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
@@ -19,8 +22,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
 
 type AuthServiceTest struct {
@@ -42,7 +43,7 @@ func TestAuthService(t *testing.T) {
 
 func (t *AuthServiceTest) SetupTest() {
 	t.Auth = &auth.Auth{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
