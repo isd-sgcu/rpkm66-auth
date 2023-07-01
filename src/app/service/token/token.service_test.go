@@ -107,7 +107,7 @@ func (t *TokenServiceTest) TestCreateCredentialsSuccess() {
 	}
 	cacheRepo.On("SaveCache", t.TokenDecoded["user_id"], cacheData, 3600).Return(nil)
 
-	srv := NewTokenService(&jwtSrv, &cacheRepo)
+	srv := NewService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.CreateCredentials(t.Auth, "asuperstrong32bitpasswordgohere!")
 
@@ -124,7 +124,7 @@ func (t *TokenServiceTest) TestCreateCredentialsInternalErr() {
 
 	cacheRepo := cache.RepositoryMock{}
 
-	srv := NewTokenService(&jwtSrv, &cacheRepo)
+	srv := NewService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.CreateCredentials(t.Auth, "asuperstrong32bitpasswordgohere!")
 
@@ -155,7 +155,7 @@ func (t *TokenServiceTest) TestValidateAccessTokenSuccess() {
 	cacheRepo := cache.RepositoryMock{}
 	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &dto.CacheAuth{}).Return(&cacheAuth, nil)
 
-	srv := NewTokenService(&jwtSrv, &cacheRepo)
+	srv := NewService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(token)
 
@@ -190,7 +190,7 @@ func testValidateAccessTokenInvalidTokenMalformedToken(t *testing.T, refreshToke
 
 	cacheRepo := cache.RepositoryMock{}
 
-	srv := NewTokenService(&jwtSrv, &cacheRepo)
+	srv := NewService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(refreshToken)
 
@@ -211,7 +211,7 @@ func testValidateAccessTokenInvalidTokenInvalidCase(t *testing.T, conf *config.J
 
 	cacheRepo := cache.RepositoryMock{}
 
-	srv := NewTokenService(&jwtSrv, &cacheRepo)
+	srv := NewService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(in)
 
@@ -240,7 +240,7 @@ func (t *TokenServiceTest) TestValidateAccessTokenNotMatchWithCache() {
 	cacheRepo := cache.RepositoryMock{}
 	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &dto.CacheAuth{}).Return(&cacheAuth, nil)
 
-	srv := NewTokenService(&jwtSrv, &cacheRepo)
+	srv := NewService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(token)
 
@@ -262,7 +262,7 @@ func (t *TokenServiceTest) TestValidateCacheNotFoundUser() {
 	cacheRepo := cache.RepositoryMock{}
 	cacheRepo.On("GetCache", t.TokenDecoded["user_id"], &dto.CacheAuth{}).Return(nil, redis.Nil)
 
-	srv := NewTokenService(&jwtSrv, &cacheRepo)
+	srv := NewService(&jwtSrv, &cacheRepo)
 
 	actual, err := srv.Validate(token)
 

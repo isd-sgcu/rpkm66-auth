@@ -8,30 +8,20 @@ import (
 	"github.com/google/uuid"
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
-	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
+	cache_repo "github.com/isd-sgcu/rpkm66-auth/src/pkg/repository/cache"
+	jwt_svc "github.com/isd-sgcu/rpkm66-auth/src/pkg/service/jwt"
 	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
 type Service struct {
-	jwtService      IJwtService
-	cacheRepository ICacheRepository
+	jwtService      jwt_svc.Service
+	cacheRepository cache_repo.Repository
 }
 
-type IJwtService interface {
-	SignAuth(*entity.Auth) (string, error)
-	VerifyAuth(string) (*jwt.Token, error)
-	GetConfig() *config.Jwt
-}
-
-type ICacheRepository interface {
-	SaveCache(string, interface{}, int) error
-	GetCache(string, interface{}) error
-}
-
-func NewTokenService(jwtService IJwtService, cacheRepository ICacheRepository) *Service {
+func NewService(jwtService jwt_svc.Service, cacheRepository cache_repo.Repository) *Service {
 	return &Service{
 		jwtService:      jwtService,
 		cacheRepository: cacheRepository,

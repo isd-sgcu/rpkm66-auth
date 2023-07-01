@@ -7,26 +7,23 @@ import (
 	dto "github.com/isd-sgcu/rpkm66-auth/src/app/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/src/app/entity/auth"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
+	"github.com/isd-sgcu/rpkm66-auth/src/pkg/strategy"
 	"github.com/pkg/errors"
 )
 
-type IStrategy interface {
-	AuthDecode(*_jwt.Token) (interface{}, error)
-}
-
-type Service struct {
+type serviceImpl struct {
 	conf     config.Jwt
-	strategy IStrategy
+	strategy strategy.JwtStrategy
 }
 
-func NewJwtService(conf config.Jwt, strategy IStrategy) *Service {
-	return &Service{
+func NewJwtService(conf config.Jwt, strategy strategy.JwtStrategy) *serviceImpl {
+	return &serviceImpl{
 		conf:     conf,
 		strategy: strategy,
 	}
 }
 
-func (s *Service) SignAuth(in *entity.Auth) (string, error) {
+func (s *serviceImpl) SignAuth(in *entity.Auth) (string, error) {
 	payloads := &dto.TokenPayloadAuth{
 		RegisteredClaims: _jwt.RegisteredClaims{
 			Issuer:    s.conf.Issuer,
@@ -45,10 +42,10 @@ func (s *Service) SignAuth(in *entity.Auth) (string, error) {
 	return tokenStr, nil
 }
 
-func (s *Service) VerifyAuth(token string) (*_jwt.Token, error) {
+func (s *serviceImpl) VerifyAuth(token string) (*_jwt.Token, error) {
 	return _jwt.Parse(token, s.strategy.AuthDecode)
 }
 
-func (s *Service) GetConfig() *config.Jwt {
+func (s *serviceImpl) GetConfig() *config.Jwt {
 	return &s.conf
 }

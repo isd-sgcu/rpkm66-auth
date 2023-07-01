@@ -2,19 +2,20 @@ package user
 
 import (
 	"context"
-	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"time"
+
+	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 )
 
-type Service struct {
+type serviceImpl struct {
 	client proto.UserServiceClient
 }
 
-func NewUserService(client proto.UserServiceClient) *Service {
-	return &Service{client: client}
+func NewUserService(client proto.UserServiceClient) *serviceImpl {
+	return &serviceImpl{client: client}
 }
 
-func (s *Service) FindByStudentID(sid string) (*proto.User, error) {
+func (s *serviceImpl) FindByStudentID(sid string) (*proto.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5000)
 	defer cancel()
 
@@ -26,7 +27,7 @@ func (s *Service) FindByStudentID(sid string) (*proto.User, error) {
 	return res.User, nil
 }
 
-func (s *Service) Create(user *proto.User) (*proto.User, error) {
+func (s *serviceImpl) Create(user *proto.User) (*proto.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5000)
 	defer cancel()
 

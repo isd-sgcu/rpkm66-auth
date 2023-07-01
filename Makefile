@@ -10,7 +10,7 @@ test:
 	go tool cover -html=coverage.out -o coverage.html
 
 server:
-	go run ./src/.
+	go run ./src/cmd/.
 
 compose-up:
 	docker-compose up -d
@@ -19,4 +19,4 @@ compose-down:
 	docker-compose down
 
 seed:
-	go run ./src/. seed
+	go run ./src/cmd/. seed

@@ -9,49 +9,32 @@ import (
 	"github.com/isd-sgcu/rpkm66-auth/src/app/utils"
 	"github.com/isd-sgcu/rpkm66-auth/src/config"
 	role "github.com/isd-sgcu/rpkm66-auth/src/constant/auth"
+	"github.com/isd-sgcu/rpkm66-auth/src/pkg/client/chula_sso"
+	auth_repo "github.com/isd-sgcu/rpkm66-auth/src/pkg/repository/auth"
+	token_svc "github.com/isd-sgcu/rpkm66-auth/src/pkg/service/token"
+	user_svc "github.com/isd-sgcu/rpkm66-auth/src/pkg/service/user"
 	"github.com/isd-sgcu/rpkm66-auth/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-type Service struct {
-	repo           IRepository
-	chulaSSOClient IChulaSSOClient
-	tokenService   ITokenService
-	userService    IUserService
+type serviceImpl struct {
+	repo           auth_repo.Repository
+	chulaSSOClient chula_sso.ChulaSSO
+	tokenService   token_svc.Service
+	userService    user_svc.Service
 	conf           config.App
 }
 
-type IRepository interface {
-	FindByRefreshToken(string, *entity.Auth) error
-	FindByUserID(string, *entity.Auth) error
-	Create(*entity.Auth) error
-	Update(string, *entity.Auth) error
-}
-
-type IChulaSSOClient interface {
-	VerifyTicket(string, *dto.ChulaSSOCredential) error
-}
-
-type IUserService interface {
-	FindByStudentID(string) (*proto.User, error)
-	Create(*proto.User) (*proto.User, error)
-}
-
-type ITokenService interface {
-	CreateCredentials(*entity.Auth, string) (*proto.Credential, error)
-	Validate(string) (*dto.UserCredential, error)
-}
-
 func NewService(
-	repo IRepository,
-	chulaSSOClient IChulaSSOClient,
-	tokenService ITokenService,
-	userService IUserService,
+	repo auth_repo.Repository,
+	chulaSSOClient chula_sso.ChulaSSO,
+	tokenService token_svc.Service,
+	userService user_svc.Service,
 	conf config.App,
-) *Service {
-	return &Service{
+) *serviceImpl {
+	return &serviceImpl{
 		repo:           repo,
 		chulaSSOClient: chulaSSOClient,
 		tokenService:   tokenService,
@@ -60,7 +43,7 @@ func NewService(
 	}
 }
 
-func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest) (res *proto.VerifyTicketResponse, err error) {
+func (s *serviceImpl) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest) (res *proto.VerifyTicketResponse, err error) {
 	ssoData := dto.ChulaSSOCredential{}
 	auth := entity.Auth{}
 
@@ -190,7 +173,7 @@ func (s *Service) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest
 	return &proto.VerifyTicketResponse{Credential: credentials}, err
 }
 
-func (s *Service) Validate(_ context.Context, req *proto.ValidateRequest) (res *proto.ValidateResponse, err error) {
+func (s *serviceImpl) Validate(_ context.Context, req *proto.ValidateRequest) (res *proto.ValidateResponse, err error) {
 	credential, err := s.tokenService.Validate(req.Token)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
@@ -202,7 +185,7 @@ func (s *Service) Validate(_ context.Context, req *proto.ValidateRequest) (res *
 	}, nil
 }
 
-func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest) (res *proto.RefreshTokenResponse, err error) {
+func (s *serviceImpl) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest) (res *proto.RefreshTokenResponse, err error) {
 	auth := entity.Auth{}
 
 	err = s.repo.FindByRefreshToken(utils.Hash([]byte(req.RefreshToken)), &auth)
@@ -222,7 +205,7 @@ func (s *Service) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest
 	return &proto.RefreshTokenResponse{Credential: credentials}, nil
 }
 
-func (s *Service) CreateNewCredential(auth *entity.Auth) (*proto.Credential, error) {
+func (s *serviceImpl) CreateNewCredential(auth *entity.Auth) (*proto.Credential, error) {
 	credentials, err := s.tokenService.CreateCredentials(auth, s.conf.Secret)
 	if err != nil {
 		return nil, err

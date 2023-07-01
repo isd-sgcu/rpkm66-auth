@@ -140,3 +140,9 @@ func (s *TokenServiceMock) Validate(token string) (payload *dto.UserCredential, 
 
 	return payload, args.Error(1)
 }
+
+func (s *TokenServiceMock) CreateRefreshToken() string {
+	args := s.Called()
+
+	return args.String(0)
+}
