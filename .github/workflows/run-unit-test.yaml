@@ -3,9 +3,9 @@ name: 'Pull request: Run unit test'
 on:
   pull_request:
     branches:
-      - dev
-      - master
+      - main
       - beta
+      - dev
 
 jobs:
   unit-test:
