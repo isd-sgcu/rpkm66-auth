@@ -2,16 +2,16 @@ version: "3.9"
 
 services:
   local-db:
-    image: mysql:8.0.28-oracle
+    image: postgres
     container_name: rnkm-local-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: rnkm-auth-db
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: dev
     volumes:
-      - ./volumes/mysql:/var/lib/mysql
+      - ./volumes/mysql:/var/lib/postgresql
     ports:
-      - "3306:3306"
+      - "5432:5432"
 
   chula-sso-mock:
     image: pay2630/chulassomock
@@ -22,3 +22,9 @@ services:
       SSO_APPSECRET: APPSECRET
     ports:
       - "8080:8080"
+
+  cache:
+    image: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
