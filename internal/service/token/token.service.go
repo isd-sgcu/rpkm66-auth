@@ -9,9 +9,9 @@ import (
 	role "github.com/isd-sgcu/rpkm66-auth/constant/auth"
 	dto "github.com/isd-sgcu/rpkm66-auth/internal/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/internal/entity/auth"
+	auth_proto "github.com/isd-sgcu/rpkm66-auth/internal/proto/rpkm66/auth/auth/v1"
 	cache_repo "github.com/isd-sgcu/rpkm66-auth/pkg/repository/cache"
 	jwt_svc "github.com/isd-sgcu/rpkm66-auth/pkg/service/jwt"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
@@ -28,7 +28,7 @@ func NewService(jwtService jwt_svc.Service, cacheRepository cache_repo.Repositor
 	}
 }
 
-func (s *Service) CreateCredentials(auth *entity.Auth, secret string) (*proto.Credential, error) {
+func (s *Service) CreateCredentials(auth *entity.Auth, secret string) (*auth_proto.Credential, error) {
 	token, err := s.jwtService.SignAuth(auth)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (s *Service) CreateCredentials(auth *entity.Auth, secret string) (*proto.Cr
 		return nil, errors.New("Internal service error")
 	}
 
-	credential := &proto.Credential{
+	credential := &auth_proto.Credential{
 		AccessToken:  token,
 		RefreshToken: s.CreateRefreshToken(),
 		ExpiresIn:    s.jwtService.GetConfig().ExpiresIn,

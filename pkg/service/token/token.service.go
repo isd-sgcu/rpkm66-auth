@@ -3,10 +3,10 @@ package token
 import (
 	dto "github.com/isd-sgcu/rpkm66-auth/internal/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/internal/entity/auth"
+	proto "github.com/isd-sgcu/rpkm66-auth/internal/proto/rpkm66/auth/auth/v1"
 	token_svc "github.com/isd-sgcu/rpkm66-auth/internal/service/token"
 	cache_repo "github.com/isd-sgcu/rpkm66-auth/pkg/repository/cache"
 	jwt_svc "github.com/isd-sgcu/rpkm66-auth/pkg/service/jwt"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
 )
 
 type Service interface {

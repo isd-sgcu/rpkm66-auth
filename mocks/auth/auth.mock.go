@@ -5,7 +5,8 @@ import (
 	"github.com/isd-sgcu/rpkm66-auth/cfgldr"
 	dto "github.com/isd-sgcu/rpkm66-auth/internal/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/internal/entity/auth"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
+	auth_proto "github.com/isd-sgcu/rpkm66-auth/internal/proto/rpkm66/auth/auth/v1"
+	user_proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/backend/user/v1"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -71,21 +72,21 @@ type UserServiceMock struct {
 	mock.Mock
 }
 
-func (c *UserServiceMock) FindByStudentID(id string) (result *proto.User, err error) {
+func (c *UserServiceMock) FindByStudentID(id string) (result *user_proto.User, err error) {
 	args := c.Called(id)
 
 	if args.Get(0) != nil {
-		result = args.Get(0).(*proto.User)
+		result = args.Get(0).(*user_proto.User)
 	}
 
 	return result, args.Error(1)
 }
 
-func (c *UserServiceMock) Create(in *proto.User) (result *proto.User, err error) {
+func (c *UserServiceMock) Create(in *user_proto.User) (result *user_proto.User, err error) {
 	args := c.Called(in)
 
 	if args.Get(0) != nil {
-		result = args.Get(0).(*proto.User)
+		result = args.Get(0).(*user_proto.User)
 	}
 
 	return result, args.Error(1)
@@ -121,11 +122,11 @@ type TokenServiceMock struct {
 	mock.Mock
 }
 
-func (s *TokenServiceMock) CreateCredentials(in *entity.Auth, secret string) (credential *proto.Credential, err error) {
+func (s *TokenServiceMock) CreateCredentials(in *entity.Auth, secret string) (credential *auth_proto.Credential, err error) {
 	args := s.Called(in, secret)
 
 	if args.Get(0) != nil {
-		credential = args.Get(0).(*proto.Credential)
+		credential = args.Get(0).(*auth_proto.Credential)
 	}
 
 	return credential, args.Error(1)

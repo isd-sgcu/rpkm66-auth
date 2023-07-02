@@ -1,7 +1,5 @@
 proto:
-	protoc --proto_path=proto --go_out=. --go-grpc_out=require_unimplemented_servers=false:. user.proto
-	protoc --proto_path=proto --go_out=. --go-grpc_out=require_unimplemented_servers=false:. auth.proto
-
+	find proto -name *.proto -exec protoc --go_out=internal/proto --go-grpc_out=internal/proto {} \;
 
 test:
 	go vet ./...

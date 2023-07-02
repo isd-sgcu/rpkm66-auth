@@ -8,18 +8,20 @@ import (
 	role "github.com/isd-sgcu/rpkm66-auth/constant/auth"
 	dto "github.com/isd-sgcu/rpkm66-auth/internal/dto/auth"
 	entity "github.com/isd-sgcu/rpkm66-auth/internal/entity/auth"
+	auth_proto "github.com/isd-sgcu/rpkm66-auth/internal/proto/rpkm66/auth/auth/v1"
 	"github.com/isd-sgcu/rpkm66-auth/internal/utils"
 	"github.com/isd-sgcu/rpkm66-auth/pkg/client/chula_sso"
 	auth_repo "github.com/isd-sgcu/rpkm66-auth/pkg/repository/auth"
 	token_svc "github.com/isd-sgcu/rpkm66-auth/pkg/service/token"
 	user_svc "github.com/isd-sgcu/rpkm66-auth/pkg/service/user"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
+	user_proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/backend/user/v1"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type serviceImpl struct {
+	auth_proto.UnimplementedAuthServiceServer
 	repo           auth_repo.Repository
 	chulaSSOClient chula_sso.ChulaSSO
 	tokenService   token_svc.Service
@@ -43,7 +45,7 @@ func NewService(
 	}
 }
 
-func (s *serviceImpl) VerifyTicket(_ context.Context, req *proto.VerifyTicketRequest) (res *proto.VerifyTicketResponse, err error) {
+func (s *serviceImpl) VerifyTicket(_ context.Context, req *auth_proto.VerifyTicketRequest) (res *auth_proto.VerifyTicketResponse, err error) {
 	ssoData := dto.ChulaSSOCredential{}
 	auth := entity.Auth{}
 
@@ -105,7 +107,7 @@ func (s *serviceImpl) VerifyTicket(_ context.Context, req *proto.VerifyTicketReq
 					return nil, status.Error(codes.Internal, "Internal service error")
 				}
 
-				in := &proto.User{
+				in := &user_proto.User{
 					Firstname: ssoData.Firstname,
 					Lastname:  ssoData.Lastname,
 					StudentID: ssoData.Ouid,
@@ -170,22 +172,22 @@ func (s *serviceImpl) VerifyTicket(_ context.Context, req *proto.VerifyTicketReq
 		Str("student_id", user.StudentID).
 		Msg("User login to the service")
 
-	return &proto.VerifyTicketResponse{Credential: credentials}, err
+	return &auth_proto.VerifyTicketResponse{Credential: credentials}, err
 }
 
-func (s *serviceImpl) Validate(_ context.Context, req *proto.ValidateRequest) (res *proto.ValidateResponse, err error) {
+func (s *serviceImpl) Validate(_ context.Context, req *auth_proto.ValidateRequest) (res *auth_proto.ValidateResponse, err error) {
 	credential, err := s.tokenService.Validate(req.Token)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	return &proto.ValidateResponse{
+	return &auth_proto.ValidateResponse{
 		UserId: credential.UserId,
 		Role:   string(credential.Role),
 	}, nil
 }
 
-func (s *serviceImpl) RefreshToken(_ context.Context, req *proto.RefreshTokenRequest) (res *proto.RefreshTokenResponse, err error) {
+func (s *serviceImpl) RefreshToken(_ context.Context, req *auth_proto.RefreshTokenRequest) (res *auth_proto.RefreshTokenResponse, err error) {
 	auth := entity.Auth{}
 
 	err = s.repo.FindByRefreshToken(utils.Hash([]byte(req.RefreshToken)), &auth)
@@ -202,10 +204,10 @@ func (s *serviceImpl) RefreshToken(_ context.Context, req *proto.RefreshTokenReq
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &proto.RefreshTokenResponse{Credential: credentials}, nil
+	return &auth_proto.RefreshTokenResponse{Credential: credentials}, nil
 }
 
-func (s *serviceImpl) CreateNewCredential(auth *entity.Auth) (*proto.Credential, error) {
+func (s *serviceImpl) CreateNewCredential(auth *entity.Auth) (*auth_proto.Credential, error) {
 	credentials, err := s.tokenService.CreateCredentials(auth, s.conf.Secret)
 	if err != nil {
 		return nil, err

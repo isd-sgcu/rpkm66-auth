@@ -13,6 +13,8 @@ import (
 	"github.com/isd-sgcu/rpkm66-auth/cfgldr"
 	"github.com/isd-sgcu/rpkm66-auth/client"
 	"github.com/isd-sgcu/rpkm66-auth/database"
+	auth_proto "github.com/isd-sgcu/rpkm66-auth/internal/proto/rpkm66/auth/auth/v1"
+	user_proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/backend/user/v1"
 	ar "github.com/isd-sgcu/rpkm66-auth/pkg/repository/auth"
 	"github.com/isd-sgcu/rpkm66-auth/pkg/repository/cache"
 	as "github.com/isd-sgcu/rpkm66-auth/pkg/service/auth"
@@ -20,7 +22,6 @@ import (
 	ts "github.com/isd-sgcu/rpkm66-auth/pkg/service/token"
 	"github.com/isd-sgcu/rpkm66-auth/pkg/service/user"
 	jsg "github.com/isd-sgcu/rpkm66-auth/pkg/strategy"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -132,7 +133,7 @@ func main() {
 
 	cacheRepo := cache.NewRepository(cacheDB)
 
-	usrClient := proto.NewUserServiceClient(backendConn)
+	usrClient := user_proto.NewUserServiceClient(backendConn)
 	usrSrv := user.NewUserService(usrClient)
 
 	stg := jsg.NewJwtStrategy(conf.Jwt.Secret)
@@ -144,7 +145,7 @@ func main() {
 	aSrv := as.NewService(aRepo, cSSO, tkSrv, usrSrv, conf.App)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
-	proto.RegisterAuthServiceServer(grpcServer, aSrv)
+	auth_proto.RegisterAuthServiceServer(grpcServer, aSrv)
 
 	reflection.Register(grpcServer)
 	go func() {

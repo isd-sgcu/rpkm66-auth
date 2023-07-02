@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package auth;
+package rpkm66.auth.auth.v1;
 
-option go_package = "proto";
+option go_package = "rpkm66/auth/auth/v1";
 
 service AuthService {
   rpc VerifyTicket(VerifyTicketRequest) returns (VerifyTicketResponse){}

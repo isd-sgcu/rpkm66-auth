@@ -13,9 +13,9 @@ import (
 	dto "github.com/isd-sgcu/rpkm66-auth/internal/dto/auth"
 	base "github.com/isd-sgcu/rpkm66-auth/internal/entity"
 	entity "github.com/isd-sgcu/rpkm66-auth/internal/entity/auth"
+	auth_proto "github.com/isd-sgcu/rpkm66-auth/internal/proto/rpkm66/auth/auth/v1"
 	mock "github.com/isd-sgcu/rpkm66-auth/mocks/auth"
 	"github.com/isd-sgcu/rpkm66-auth/mocks/cache"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -24,7 +24,7 @@ import (
 
 type TokenServiceTest struct {
 	suite.Suite
-	Credential   *proto.Credential
+	Credential   *auth_proto.Credential
 	Auth         *entity.Auth
 	Token        *jwt.Token
 	TokenDecoded jwt.MapClaims
@@ -43,7 +43,7 @@ func (t *TokenServiceTest) SetupTest() {
 		Issuer:    faker.Word(),
 	}
 
-	t.Credential = &proto.Credential{
+	t.Credential = &auth_proto.Credential{
 		AccessToken:  faker.Word(),
 		RefreshToken: faker.Word(),
 		ExpiresIn:    3600,
@@ -128,7 +128,7 @@ func (t *TokenServiceTest) TestCreateCredentialsInternalErr() {
 
 	actual, err := srv.CreateCredentials(t.Auth, "asuperstrong32bitpasswordgohere!")
 
-	var credential *proto.Credential
+	var credential *auth_proto.Credential
 
 	assert.Equal(t.T(), credential, actual)
 	assert.Equal(t.T(), want.Error(), err.Error())

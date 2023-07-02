@@ -5,7 +5,7 @@ import (
 
 	"github.com/bxcodec/faker/v3"
 	mock "github.com/isd-sgcu/rpkm66-auth/mocks/user"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
+	user_proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/backend/user/v1"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -15,7 +15,7 @@ import (
 
 type UserServiceTest struct {
 	suite.Suite
-	UserDto         *proto.User
+	UserDto         *user_proto.User
 	UnauthorizedErr error
 	NotFoundErr     error
 	ServiceDownErr  error
@@ -26,7 +26,7 @@ func TestUserService(t *testing.T) {
 }
 
 func (t *UserServiceTest) SetupTest() {
-	t.UserDto = &proto.User{
+	t.UserDto = &user_proto.User{
 		Title:           faker.Word(),
 		Firstname:       faker.FirstName(),
 		Lastname:        faker.LastName(),
@@ -53,8 +53,8 @@ func (t *UserServiceTest) TestFindByStudentIDSuccess() {
 	want := t.UserDto
 
 	c := &mock.ClientMock{}
-	c.On("FindByStudentID", &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
-		Return(&proto.FindByStudentIDUserResponse{User: t.UserDto}, nil)
+	c.On("FindByStudentID", &user_proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
+		Return(&user_proto.FindByStudentIDUserResponse{User: t.UserDto}, nil)
 
 	srv := NewUserService(c)
 
@@ -66,7 +66,7 @@ func (t *UserServiceTest) TestFindByStudentIDSuccess() {
 
 func (t *UserServiceTest) TestFindByStudentIDUnauthorized() {
 	c := &mock.ClientMock{}
-	c.On("FindByStudentID", &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
+	c.On("FindByStudentID", &user_proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
 		Return(nil, status.Error(codes.Unauthenticated, t.NotFoundErr.Error()))
 
 	srv := NewUserService(c)
@@ -81,7 +81,7 @@ func (t *UserServiceTest) TestFindByStudentIDUnauthorized() {
 
 func (t *UserServiceTest) TestFindByStudentIDNotFound() {
 	c := &mock.ClientMock{}
-	c.On("FindByStudentID", &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
+	c.On("FindByStudentID", &user_proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
 		Return(nil, status.Error(codes.NotFound, t.NotFoundErr.Error()))
 
 	srv := NewUserService(c)
@@ -96,7 +96,7 @@ func (t *UserServiceTest) TestFindByStudentIDNotFound() {
 
 func (t *UserServiceTest) TestFindByStudentIDGrpcError() {
 	c := &mock.ClientMock{}
-	c.On("FindByStudentID", &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
+	c.On("FindByStudentID", &user_proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID}).
 		Return(nil, status.Error(codes.Unavailable, t.ServiceDownErr.Error()))
 
 	srv := NewUserService(c)
@@ -113,12 +113,12 @@ func (t *UserServiceTest) TestCreateSuccess() {
 	want := t.UserDto
 
 	c := &mock.ClientMock{}
-	c.On("Create", &proto.CreateUserRequest{User: &proto.User{}}).
-		Return(&proto.CreateUserResponse{User: t.UserDto}, nil)
+	c.On("Create", &user_proto.CreateUserRequest{User: &user_proto.User{}}).
+		Return(&user_proto.CreateUserResponse{User: t.UserDto}, nil)
 
 	srv := NewUserService(c)
 
-	actual, err := srv.Create(&proto.User{})
+	actual, err := srv.Create(&user_proto.User{})
 
 	assert.Nil(t.T(), err)
 	assert.Equal(t.T(), want, actual)
@@ -126,12 +126,12 @@ func (t *UserServiceTest) TestCreateSuccess() {
 
 func (t *UserServiceTest) TestCreateGrpcErr() {
 	c := &mock.ClientMock{}
-	c.On("Create", &proto.CreateUserRequest{User: &proto.User{}}).
+	c.On("Create", &user_proto.CreateUserRequest{User: &user_proto.User{}}).
 		Return(nil, status.Error(codes.Unavailable, t.ServiceDownErr.Error()))
 
 	srv := NewUserService(c)
 
-	actual, err := srv.Create(&proto.User{})
+	actual, err := srv.Create(&user_proto.User{})
 
 	st, ok := status.FromError(err)
 	assert.True(t.T(), ok)

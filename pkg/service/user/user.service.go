@@ -2,7 +2,7 @@ package user
 
 import (
 	user_svc "github.com/isd-sgcu/rpkm66-auth/internal/service/user"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
+	proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/backend/user/v1"
 )
 
 type Service interface {

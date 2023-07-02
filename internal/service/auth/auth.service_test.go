@@ -13,9 +13,10 @@ import (
 	dto "github.com/isd-sgcu/rpkm66-auth/internal/dto/auth"
 	"github.com/isd-sgcu/rpkm66-auth/internal/entity"
 	"github.com/isd-sgcu/rpkm66-auth/internal/entity/auth"
+	auth_proto "github.com/isd-sgcu/rpkm66-auth/internal/proto/rpkm66/auth/auth/v1"
 	"github.com/isd-sgcu/rpkm66-auth/internal/utils"
 	mock "github.com/isd-sgcu/rpkm66-auth/mocks/auth"
-	"github.com/isd-sgcu/rpkm66-auth/proto"
+	user_proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/backend/user/v1"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -27,8 +28,8 @@ import (
 type AuthServiceTest struct {
 	suite.Suite
 	Auth            *auth.Auth
-	UserDto         *proto.User
-	Credential      *proto.Credential
+	UserDto         *user_proto.User
+	Credential      *auth_proto.Credential
 	Payload         *dto.TokenPayloadAuth
 	UserCredential  *dto.UserCredential
 	conf            cfgldr.App
@@ -54,7 +55,7 @@ func (t *AuthServiceTest) SetupTest() {
 		RefreshToken: faker.Word(),
 	}
 
-	t.UserDto = &proto.User{
+	t.UserDto = &user_proto.User{
 		Id:              t.Auth.UserID,
 		Firstname:       faker.FirstName(),
 		Lastname:        faker.LastName(),
@@ -73,7 +74,7 @@ func (t *AuthServiceTest) SetupTest() {
 		CanSelectBaan:   true,
 	}
 
-	t.Credential = &proto.Credential{
+	t.Credential = &auth_proto.Credential{
 		AccessToken:  faker.Word(),
 		RefreshToken: t.Auth.RefreshToken,
 		ExpiresIn:    3600,
@@ -106,7 +107,7 @@ func (t *AuthServiceTest) SetupTest() {
 }
 
 func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
-	want := &proto.VerifyTicketResponse{
+	want := &auth_proto.VerifyTicketResponse{
 		Credential: t.Credential,
 	}
 
@@ -139,7 +140,7 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 	chulaSSOClient := &mock.ChulaSSOClientMock{}
 	chulaSSOClient.On("VerifyTicket", ticket, &dto.ChulaSSOCredential{}).Return(chulaSSORes, nil)
 
-	in := &proto.User{
+	in := &user_proto.User{
 		StudentID: t.UserDto.StudentID,
 		Faculty:   t.UserDto.Faculty,
 		Year:      t.UserDto.Year,
@@ -155,14 +156,14 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
-	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
+	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	assert.Nilf(t.T(), err, "error: %v", err)
 	assert.Equal(t.T(), want, actual)
 }
 
 func (t *AuthServiceTest) TestVerifyTicketSuccessNotFirstTimeLogin() {
-	want := &proto.VerifyTicketResponse{
+	want := &auth_proto.VerifyTicketResponse{
 		Credential: t.Credential,
 	}
 
@@ -198,7 +199,7 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessNotFirstTimeLogin() {
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
-	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
+	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	assert.Nilf(t.T(), err, "error: %v", err)
 	assert.Equal(t.T(), want, actual)
@@ -218,7 +219,7 @@ func (t *AuthServiceTest) TestVerifyTicketInvalid() {
 	tokenService := &mock.TokenServiceMock{}
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
-	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
+	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	st, ok := status.FromError(err)
 
@@ -261,7 +262,7 @@ func (t *AuthServiceTest) TestVerifyForbiddenYear() {
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
-	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
+	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 	st, ok := status.FromError(err)
 
 	assert.True(t.T(), ok)
@@ -283,7 +284,7 @@ func (t *AuthServiceTest) TestVerifyTicketGrpcErr() {
 	tokenService := &mock.TokenServiceMock{}
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
-	actual, err := srv.VerifyTicket(context.Background(), &proto.VerifyTicketRequest{Ticket: ticket})
+	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	st, ok := status.FromError(err)
 
@@ -293,7 +294,7 @@ func (t *AuthServiceTest) TestVerifyTicketGrpcErr() {
 }
 
 func (t *AuthServiceTest) TestValidateSuccess() {
-	want := &proto.ValidateResponse{
+	want := &auth_proto.ValidateResponse{
 		UserId: t.UserDto.Id,
 		Role:   t.Auth.Role,
 	}
@@ -310,7 +311,7 @@ func (t *AuthServiceTest) TestValidateSuccess() {
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
 
-	actual, err := srv.Validate(context.Background(), &proto.ValidateRequest{Token: token})
+	actual, err := srv.Validate(context.Background(), &auth_proto.ValidateRequest{Token: token})
 
 	assert.Nilf(t.T(), err, "error: %v", err)
 	assert.Equal(t.T(), want, actual)
@@ -330,7 +331,7 @@ func (t *AuthServiceTest) TestValidateInvalidToken() {
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
 
-	actual, err := srv.Validate(context.Background(), &proto.ValidateRequest{Token: token})
+	actual, err := srv.Validate(context.Background(), &auth_proto.ValidateRequest{Token: token})
 
 	st, ok := status.FromError(err)
 
@@ -343,7 +344,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 	token := faker.Word()
 	t.Auth.RefreshToken = utils.Hash([]byte(t.Credential.RefreshToken))
 
-	want := &proto.RefreshTokenResponse{Credential: t.Credential}
+	want := &auth_proto.RefreshTokenResponse{Credential: t.Credential}
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindByRefreshToken", utils.Hash([]byte(token)), &auth.Auth{}).Return(t.Auth, nil)
@@ -359,7 +360,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
 
-	actual, err := srv.RefreshToken(context.Background(), &proto.RefreshTokenRequest{RefreshToken: token})
+	actual, err := srv.RefreshToken(context.Background(), &auth_proto.RefreshTokenRequest{RefreshToken: token})
 
 	assert.Nilf(t.T(), err, "error: %v", err)
 	assert.Equal(t.T(), want, actual)
@@ -383,7 +384,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
 
-	actual, err := srv.RefreshToken(context.Background(), &proto.RefreshTokenRequest{RefreshToken: token})
+	actual, err := srv.RefreshToken(context.Background(), &auth_proto.RefreshTokenRequest{RefreshToken: token})
 
 	st, ok := status.FromError(err)
 
@@ -409,7 +410,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
 
 	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
 
-	actual, err := srv.RefreshToken(context.Background(), &proto.RefreshTokenRequest{RefreshToken: token})
+	actual, err := srv.RefreshToken(context.Background(), &auth_proto.RefreshTokenRequest{RefreshToken: token})
 
 	st, ok := status.FromError(err)
 
