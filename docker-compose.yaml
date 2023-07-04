@@ -17,9 +17,8 @@ services:
     image: pay2630/chulassomock
     restart: unless-stopped
     environment:
-      SSO_URL: http://localhost:8080
-      SSO_APPID: APPID
-      SSO_APPSECRET: APPSECRET
+      APPID: APPID
+      APPSECRET: APPSECRET
     ports:
       - "8080:8080"
 
