@@ -37,7 +37,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Setup cred
+      - name: Setup credential
         shell: bash
         env:
           NETRC_CONFIG: ${{ secrets.NETRC_CONFIG }}
