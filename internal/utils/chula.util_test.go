@@ -54,10 +54,10 @@ func testGetFacultyInvalidInput(t *testing.T, sid string) {
 }
 
 func (t *ChulaUtilTest) TestGetStudyYearSuccess() {
-	testGetStudyYearSuccess(t.T(), "62xxxxxxxx", "4")
-	testGetStudyYearSuccess(t.T(), "63xxxxxxxx", "3")
-	testGetStudyYearSuccess(t.T(), "64xxxxxxxx", "2")
-	testGetStudyYearSuccess(t.T(), "65xxxxxxxx", "1")
+	testGetStudyYearSuccess(t.T(), "63xxxxxxxx", "4")
+	testGetStudyYearSuccess(t.T(), "64xxxxxxxx", "3")
+	testGetStudyYearSuccess(t.T(), "65xxxxxxxx", "2")
+	testGetStudyYearSuccess(t.T(), "66xxxxxxxx", "1")
 }
 
 func testGetStudyYearSuccess(t *testing.T, sid string, expect string) {
@@ -71,13 +71,13 @@ func testGetStudyYearSuccess(t *testing.T, sid string, expect string) {
 
 func (t *ChulaUtilTest) TestCalStudyYearInvalidFormat() {
 	testCalStudyYearInvalidInput(t.T(), "")
-	testCalStudyYearInvalidInput(t.T(), "65xxx")
+	testCalStudyYearInvalidInput(t.T(), "66xxx")
 	testCalStudyYearInvalidInput(t.T(), "xx24xxxxxx")
-	testCalStudyYearInvalidInput(t.T(), "65xxxxxxxxxxx")
+	testCalStudyYearInvalidInput(t.T(), "66xxxxxxxxxxx")
 }
 
 func (t *ChulaUtilTest) TestCalStudyYearInvalidYear() {
-	testCalStudyYearInvalidInput(t.T(), "66xxxxxxxxxxx")
+	testCalStudyYearInvalidInput(t.T(), "67xxxxxxxxxxx")
 	testCalStudyYearInvalidInput(t.T(), "68xxxxxxxxxxx")
 	testCalStudyYearInvalidInput(t.T(), "99xxxxxxxxxxx")
 }
