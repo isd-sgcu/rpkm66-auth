@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const CurrentYear = 65
+const CurrentYear = 66
 
 func GetFacultyFromID(sid string) (*utils.Faculty, error) {
 	if len(sid) != 10 {
