@@ -60,7 +60,7 @@ func (t *AuthServiceTest) SetupTest() {
 		Firstname:       faker.FirstName(),
 		Lastname:        faker.LastName(),
 		Nickname:        faker.Name(),
-		StudentID:       "63xxxxxx21",
+		StudentID:       "64xxxxxx21",
 		Faculty:         "Faculty of Engineering",
 		Year:            "3",
 		Title:           faker.Word(),
