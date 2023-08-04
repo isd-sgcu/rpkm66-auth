@@ -90,3 +90,22 @@ func testCalStudyYearInvalidInput(t *testing.T, sid string) {
 	assert.Equal(t, actual, "")
 	assert.Equal(t, want, err.Error())
 }
+
+func (t *ChulaUtilTest) TestValidStudentGmail() {
+	gmail := "6530000021@student.chula.ac.th"
+
+	ouid, err := GetOuidFromGmail(gmail)
+
+	t.Nil(err)
+	t.Equal("6530000021", ouid)
+}
+
+func (t *ChulaUtilTest) TestInvalidStudentGmail_InvalidOuid() {
+	gmail := "notstudent@student.chula.ac.th"
+
+	expected := "Invalid student email"
+
+	_, err := GetOuidFromGmail(gmail)
+
+	t.Equal(expected, err.Error())
+}

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"regexp"
 	"strconv"
 
 	"github.com/isd-sgcu/rpkm66-auth/constant/utils"
@@ -8,6 +9,10 @@ import (
 )
 
 const CurrentYear = 66
+
+var (
+	pattern = regexp.MustCompile("(\\d{10})@student.chula.ac.th")
+)
 
 func GetFacultyFromID(sid string) (*utils.Faculty, error) {
 	if len(sid) != 10 {
@@ -37,4 +42,14 @@ func CalYearFromID(sid string) (string, error) {
 	}
 
 	return strconv.Itoa(studYear), nil
+}
+
+func GetOuidFromGmail(email string) (string, error) {
+	found := pattern.FindAllStringSubmatch(email, -1)
+
+	if len(found) > 0 && len(found[0]) > 1 {
+		return found[0][1], nil
+	} else {
+		return "", errors.New("Invalid student email")
+	}
 }

@@ -95,6 +95,8 @@ func main() {
 			Msg("Failed to start service")
 	}
 
+	oauthConfig := cfgldr.LoadOauthConfig(conf.Oauth)
+
 	db, err := database.InitDatabase(&conf.Database)
 	if err != nil {
 		log.Fatal().
@@ -130,6 +132,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	cSSO := client.NewChulaSSO(conf.ChulaSSO)
+	gClient := client.NewGoogleOauthClient(oauthConfig)
 
 	cacheRepo := cache.NewRepository(cacheDB)
 
@@ -142,7 +145,7 @@ func main() {
 	tkSrv := ts.NewTokenService(jtSrv, cacheRepo)
 
 	aRepo := ar.NewRepository(db)
-	aSrv := as.NewService(aRepo, cSSO, tkSrv, usrSrv, conf.App)
+	aSrv := as.NewService(aRepo, cSSO, tkSrv, usrSrv, conf.App, oauthConfig, gClient)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	auth_proto.RegisterAuthServiceServer(grpcServer, aSrv)
