@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rpkm66-auth/cfgldr"
+	"github.com/isd-sgcu/rpkm66-auth/client"
 	role "github.com/isd-sgcu/rpkm66-auth/constant/auth"
 	dto "github.com/isd-sgcu/rpkm66-auth/internal/dto/auth"
 	"github.com/isd-sgcu/rpkm66-auth/internal/entity"
@@ -20,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/oauth2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -27,15 +29,17 @@ import (
 
 type AuthServiceTest struct {
 	suite.Suite
-	Auth            *auth.Auth
-	UserDto         *user_proto.User
-	Credential      *auth_proto.Credential
-	Payload         *dto.TokenPayloadAuth
-	UserCredential  *dto.UserCredential
-	conf            cfgldr.App
-	UnauthorizedErr error
-	NotFoundErr     error
-	ServiceDownErr  error
+	Auth              *auth.Auth
+	UserDto           *user_proto.User
+	Credential        *auth_proto.Credential
+	Payload           *dto.TokenPayloadAuth
+	UserCredential    *dto.UserCredential
+	conf              cfgldr.App
+	oauthConf         oauth2.Config
+	googleOauthClient *client.GoogleOauthClient
+	UnauthorizedErr   error
+	NotFoundErr       error
+	ServiceDownErr    error
 }
 
 func TestAuthService(t *testing.T) {
@@ -104,6 +108,8 @@ func (t *AuthServiceTest) SetupTest() {
 		Secret:          "asuperstrong32bitpasswordgohere!",
 		MaxRestrictYear: 3,
 	}
+
+	t.oauthConf = oauth2.Config{}
 }
 
 func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
@@ -155,7 +161,7 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessFirstTimeLogin() {
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	assert.Nilf(t.T(), err, "error: %v", err)
@@ -198,7 +204,7 @@ func (t *AuthServiceTest) TestVerifyTicketSuccessNotFirstTimeLogin() {
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	assert.Nilf(t.T(), err, "error: %v", err)
@@ -218,7 +224,7 @@ func (t *AuthServiceTest) TestVerifyTicketInvalid() {
 
 	tokenService := &mock.TokenServiceMock{}
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	st, ok := status.FromError(err)
@@ -261,7 +267,7 @@ func (t *AuthServiceTest) TestVerifyForbiddenYear() {
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 	st, ok := status.FromError(err)
 
@@ -283,7 +289,7 @@ func (t *AuthServiceTest) TestVerifyTicketGrpcErr() {
 
 	tokenService := &mock.TokenServiceMock{}
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 	actual, err := srv.VerifyTicket(context.Background(), &auth_proto.VerifyTicketRequest{Ticket: ticket})
 
 	st, ok := status.FromError(err)
@@ -309,7 +315,7 @@ func (t *AuthServiceTest) TestValidateSuccess() {
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("Validate", token).Return(t.UserCredential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 
 	actual, err := srv.Validate(context.Background(), &auth_proto.ValidateRequest{Token: token})
 
@@ -329,7 +335,7 @@ func (t *AuthServiceTest) TestValidateInvalidToken() {
 	tokenService := &mock.TokenServiceMock{}
 	tokenService.On("Validate", token).Return(nil, errors.New("Invalid token"))
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 
 	actual, err := srv.Validate(context.Background(), &auth_proto.ValidateRequest{Token: token})
 
@@ -358,7 +364,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenSuccess() {
 	tokenService.On("CreateRefreshToken").Return(token)
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 
 	actual, err := srv.RefreshToken(context.Background(), &auth_proto.RefreshTokenRequest{RefreshToken: token})
 
@@ -382,7 +388,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInvalidToken() {
 	tokenService.On("CreateRefreshToken").Return(token)
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 
 	actual, err := srv.RefreshToken(context.Background(), &auth_proto.RefreshTokenRequest{RefreshToken: token})
 
@@ -408,7 +414,7 @@ func (t *AuthServiceTest) TestRedeemRefreshTokenInternalErr() {
 	tokenService.On("CreateRefreshToken").Return(token)
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(nil, errors.New("Invalid secret key"))
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 
 	actual, err := srv.RefreshToken(context.Background(), &auth_proto.RefreshTokenRequest{RefreshToken: token})
 
@@ -436,7 +442,7 @@ func (t *AuthServiceTest) TestCreateCredentialsSuccess() {
 	tokenService.On("CreateRefreshToken").Return(token)
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(t.Credential, nil)
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 
 	credentials, err := srv.CreateNewCredential(t.Auth)
 
@@ -461,7 +467,7 @@ func (t *AuthServiceTest) TestCreateCredentialsInternalErr() {
 	tokenService.On("CreateRefreshToken").Return(token)
 	tokenService.On("CreateCredentials", t.Auth, t.conf.Secret).Return(nil, errors.New("Invalid secret key"))
 
-	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf)
+	srv := NewService(repo, chulaSSOClient, tokenService, userService, t.conf, &t.oauthConf, t.googleOauthClient)
 
 	credentials, err := srv.CreateNewCredential(t.Auth)
 

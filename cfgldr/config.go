@@ -3,6 +3,8 @@ package cfgldr
 import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type Redis struct {
@@ -44,8 +46,15 @@ type Jwt struct {
 	Issuer    string `mapstructure:"issuer"`
 }
 
+type Oauth struct {
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	RedirectUri  string `mapstructure:"redirect_uri"`
+}
+
 type Config struct {
 	Redis    Redis    `mapstructure:"redis"`
+	Oauth    Oauth    `mapstructure:"google-oauth"`
 	Database Database `mapstructure:"database"`
 	App      App      `mapstructure:"app"`
 	ChulaSSO ChulaSSO `mapstructure:"chula-sso"`
@@ -71,4 +80,14 @@ func LoadConfig() (config *Config, err error) {
 	}
 
 	return
+}
+
+func LoadOauthConfig(oauth Oauth) *oauth2.Config {
+	return &oauth2.Config{
+		ClientID:     oauth.ClientID,
+		ClientSecret: oauth.ClientSecret,
+		RedirectURL:  oauth.RedirectUri,
+		Endpoint:     google.Endpoint,
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
+	}
 }

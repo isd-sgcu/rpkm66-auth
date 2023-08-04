@@ -8,6 +8,8 @@ service AuthService {
   rpc VerifyTicket(VerifyTicketRequest) returns (VerifyTicketResponse){}
   rpc Validate(ValidateRequest) returns (ValidateResponse){}
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse){}
+  rpc GetGoogleLoginUrl(GetGoogleLoginUrlRequest) returns (GetGoogleLoginUrlResponse){}
+  rpc VerifyGoogleLogin(VerifyGoogleLoginRequest) returns (VerifyGoogleLoginResponse){}
 }
 
 message Credential{
@@ -46,3 +48,19 @@ message RefreshTokenRequest{
 message RefreshTokenResponse{
   Credential credential = 1;
 }
+
+message GetGoogleLoginUrlRequest {
+}
+
+message GetGoogleLoginUrlResponse {
+  string url = 1;
+}
+
+message VerifyGoogleLoginRequest {
+  string code = 1;
+}
+
+message VerifyGoogleLoginResponse {
+  Credential credential = 1;
+}
+
