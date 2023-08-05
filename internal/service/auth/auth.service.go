@@ -295,7 +295,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *auth_proto.Ver
 					log.Error().
 						Err(err).
 						Str("service", "auth").
-						Str("module", "verify ticket").
+						Str("module", "google").
 						Str("student_id", ouid).
 						Msg("Cannot parse year to to int")
 					return nil, status.Error(codes.Internal, "Internal service error")
@@ -306,7 +306,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *auth_proto.Ver
 					log.Error().
 						Err(err).
 						Str("service", "auth").
-						Str("module", "verify ticket").
+						Str("module", "google").
 						Str("student_id", ouid).
 						Msg("Cannot parse student id to int")
 					return nil, status.Error(codes.Internal, "Internal service error")
@@ -315,7 +315,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *auth_proto.Ver
 				if yearInt > s.conf.MaxRestrictYear {
 					log.Error().
 						Str("service", "auth").
-						Str("module", "verify ticket").
+						Str("module", "google").
 						Str("student_id", ouid).
 						Msg("Someone is trying to login (forbidden year)")
 					return nil, status.Error(codes.PermissionDenied, "Forbidden study year")
@@ -326,7 +326,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *auth_proto.Ver
 					log.Error().
 						Err(err).
 						Str("service", "auth").
-						Str("module", "verify ticket").
+						Str("module", "google").
 						Str("student_id", ouid).
 						Msg("Cannot get faculty from student id")
 					return nil, status.Error(codes.Internal, "Internal service error")
@@ -355,7 +355,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *auth_proto.Ver
 					log.Error().
 						Err(err).
 						Str("service", "auth").
-						Str("module", "verify ticket").
+						Str("module", "google").
 						Str("student_id", ouid).
 						Msg("Error creating the auth data")
 					return nil, status.Error(codes.Unavailable, st.Message())
@@ -365,7 +365,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *auth_proto.Ver
 				log.Error().
 					Err(err).
 					Str("service", "auth").
-					Str("module", "verify ticket").
+					Str("module", "google").
 					Str("student_id", ouid).
 					Msg("Service is down")
 				return nil, status.Error(codes.Unavailable, st.Message())
@@ -374,7 +374,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *auth_proto.Ver
 			log.Error().
 				Err(err).
 				Str("service", "auth").
-				Str("module", "verify ticket").
+				Str("module", "google").
 				Str("student_id", ouid).
 				Msg("Error connect to sso")
 			return nil, status.Error(codes.Unavailable, "Service is down")
